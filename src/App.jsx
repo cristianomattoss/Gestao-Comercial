@@ -1,10 +1,13 @@
 import "./App.css";
 import { useState } from "react";
 
+import Dashboard from "./components/Dashboard";
+
 function App() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
+  const [usuarioLogado, setUsuarioLogado] = useState(null);
 
   const usuarios = [
     {
@@ -36,9 +39,11 @@ function App() {
 
     console.log("Login realizado:", usuarioEncontrado);
 
-    alert(
-      `Login realizado com sucesso!\nPerfil: ${usuarioEncontrado.perfil}`
-    );
+    setUsuarioLogado(usuarioEncontrado);
+  }
+
+  if (usuarioLogado) {
+    return <Dashboard usuario={usuarioLogado} />;
   }
 
   return (
