@@ -2,6 +2,7 @@ import "./App.css";
 import { useState } from "react";
 
 import Dashboard from "./components/Dashboard";
+import AdminDashboard from "./components/AdminDashboard";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -19,6 +20,7 @@ function App() {
       email: "gestor@empresa.com",
       senha: "123456",
       perfil: "GESTOR",
+      filial: "Filial Centro",
     },
   ];
 
@@ -43,6 +45,10 @@ function App() {
   }
 
   if (usuarioLogado) {
+    if (usuarioLogado.perfil === "ADMIN") {
+      return <AdminDashboard usuario={usuarioLogado} />;
+    }
+
     return <Dashboard usuario={usuarioLogado} />;
   }
 
