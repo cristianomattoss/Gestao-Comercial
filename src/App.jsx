@@ -1,6 +1,46 @@
 import "./App.css";
+import { useState } from "react";
 
 function App() {
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+
+  const usuarios = [
+    {
+      email: "admin@empresa.com",
+      senha: "123456",
+      perfil: "ADMIN",
+    },
+    {
+      email: "gestor@empresa.com",
+      senha: "123456",
+      perfil: "GESTOR",
+    },
+  ];
+
+  function handleLogin(event) {
+    event.preventDefault();
+
+    setErro("");
+
+    const usuarioEncontrado = usuarios.find(
+      (usuario) =>
+        usuario.email === email && usuario.senha === senha
+    );
+
+    if (!usuarioEncontrado) {
+      setErro("E-mail ou senha inválidos.");
+      return;
+    }
+
+    console.log("Login realizado:", usuarioEncontrado);
+
+    alert(
+      `Login realizado com sucesso!\nPerfil: ${usuarioEncontrado.perfil}`
+    );
+  }
+
   return (
     <main className="login-page">
       <section className="login-container">
@@ -43,24 +83,42 @@ function App() {
             <h2>Bem-vindo!</h2>
             <p className="subtitle">Acesse sua conta para continuar</p>
 
-            <form>
+            <form onSubmit={handleLogin}>
               <div className="input-group">
                 <label htmlFor="email">E-mail</label>
                 <input
                   id="email"
                   type="email"
-                  placeholder="seuemail@empresa.com"
+                  placeholder="Digite seu e-mail"
+                  value={email}
+                  onChange={(event) =>
+                    setEmail(event.target.value)
+                  }
+                  autoComplete="email"
+                  required
                 />
               </div>
 
               <div className="input-group">
-                <label htmlFor="password">Senha</label>
+                <label htmlFor="senha">Senha</label>
                 <input
-                  id="password"
+                  id="senha"
                   type="password"
                   placeholder="Digite sua senha"
+                  value={senha}
+                  onChange={(event) =>
+                    setSenha(event.target.value)
+                  }
+                  autoComplete="current-password"
+                  required
                 />
               </div>
+
+              {erro && (
+                <p className="login-error">
+                  {erro}
+                </p>
+              )}
 
               <button type="submit">Entrar →</button>
             </form>
