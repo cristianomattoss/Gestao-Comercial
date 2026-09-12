@@ -8,6 +8,9 @@ import AdminDashboard from "./views/AdminDashboard";
 import Vendas from "./views/Vendas";
 import Estoque from "./views/Estoque";
 import Configuracoes from "./views/Configuracoes";
+import Filiais from "./views/Filiais";
+import Comparativo from "./views/Comparativo";
+import Relatorios from "./views/Relatorios";
 
 import { autenticarUsuario } from "./controllers/authController";
 import { usuariosIniciais } from "./data/usuariosData";
@@ -164,6 +167,17 @@ function App() {
           }
         />
 
+        <Route
+          path="/filiais"
+          element={
+            usuarioLogado && usuarioLogado.perfil === ESTADOS.ADMIN ? (
+              <Filiais usuario={usuarioLogado} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          }
+        />
+
         {/* VENDAS */}
         <Route
           path="/vendas"
@@ -184,6 +198,28 @@ function App() {
           element={
             usuarioLogado ? (
               <Estoque usuario={usuarioLogado} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/comparativo"
+          element={
+            usuarioLogado && usuarioLogado.perfil === ESTADOS.ADMIN ? (
+              <Comparativo usuario={usuarioLogado} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/relatorios"
+          element={
+            usuarioLogado ? (
+              <Relatorios usuario={usuarioLogado} onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
             )
