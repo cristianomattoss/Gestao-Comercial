@@ -5,68 +5,26 @@ import { getFiliais } from "../services/pdvService";
 
 import FiliaisConfig from "../components/FiliaisConfig";
 import UsuariosConfig from "../components/UsuariosConfig";
+import Sidebar from "../components/Sidebar";
 
-function Configuracoes({ usuario, onNavigate, usuarios, setUsuarios }) {
+function Configuracoes({
+  usuario,
+  onNavigate,
+  usuarios,
+  setUsuarios,
+  onLogout,
+}) {
   const [filiais, setFiliais] = useState(getFiliais());
   const [abaAtiva, setAbaAtiva] = useState("filiais");
 
   return (
     <main className="dashboard-page">
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          <div className="sidebar-icon">🏪</div>
-          <span>Gestão Comercial</span>
-        </div>
-
-        <nav className="sidebar-menu">
-          <button className="menu-item" onClick={() => onNavigate("dashboard")}>
-            <span>📊</span>
-            Dashboard
-          </button>
-
-          <button className="menu-item">
-            <span>🏢</span>
-            Filiais
-          </button>
-
-          <button className="menu-item">
-            <span>🛒</span>
-            Vendas
-          </button>
-
-          <button className="menu-item">
-            <span>📦</span>
-            Estoque
-          </button>
-
-          <button className="menu-item">
-            <span>📈</span>
-            Comparativo
-          </button>
-
-          <button className="menu-item">
-            <span>📄</span>
-            Relatórios
-          </button>
-
-          <button className="menu-item active">
-            <span>⚙️</span>
-            Configurações
-          </button>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <button className="menu-item">
-            <span>❓</span>
-            Ajuda
-          </button>
-
-          <button className="menu-item">
-            <span>↪</span>
-            Sair
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        paginaAtiva="configuracoes"
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+        admin
+      />
 
       <section className="dashboard-content">
         <header className="dashboard-header">

@@ -49,6 +49,12 @@
   gap: 12px;
 }
 
+.sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .menu-item:hover {
   background: #1d3d5c;
 }

@@ -1,89 +1,87 @@
-function Sidebar({ paginaAtiva, onNavigate, onLogout, admin = false }) {
+import { NavLink, useNavigate } from "react-router-dom";
+
+import {
+  LayoutDashboard,
+  Building2,
+  ShoppingCart,
+  Package,
+  BarChart3,
+  FileText,
+  Settings,
+  HelpCircle,
+  LogOut,
+  Store,
+} from "lucide-react";
+
+function Sidebar({ onLogout, admin = false }) {
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    onLogout();
+    navigate("/login");
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="sidebar-icon">🏪</div>
+        <div className="sidebar-icon">
+          <Store size={20} />
+        </div>
+
         <span>Gestão Comercial</span>
       </div>
 
       <nav className="sidebar-menu">
-        <button
-          className={`menu-item ${paginaAtiva === "dashboard" ? "active" : ""}`}
-          onClick={() => onNavigate("dashboard")}
-        >
-          <span>📊</span>
+        <NavLink to="/dashboard" className="menu-item">
+          <LayoutDashboard size={19} />
           Dashboard
-        </button>
+        </NavLink>
 
         {admin && (
-          <button
-            className={`menu-item ${paginaAtiva === "filiais" ? "active" : ""}`}
-            onClick={() => onNavigate("filiais")}
-          >
-            <span>🏢</span>
+          <NavLink to="/filiais" className="menu-item">
+            <Building2 size={19} />
             Filiais
-          </button>
+          </NavLink>
         )}
 
-        <button
-          className={`menu-item ${paginaAtiva === "vendas" ? "active" : ""}`}
-          onClick={() => onNavigate("vendas")}
-        >
-          <span>🛒</span>
+        <NavLink to="/vendas" className="menu-item">
+          <ShoppingCart size={19} />
           Vendas
-        </button>
+        </NavLink>
 
-        <button
-          className={`menu-item ${paginaAtiva === "estoque" ? "active" : ""}`}
-          onClick={() => onNavigate("estoque")}
-        >
-          <span>📦</span>
+        <NavLink to="/estoque" className="menu-item">
+          <Package size={19} />
           Estoque
-        </button>
+        </NavLink>
 
         {admin && (
-          <button
-            className={`menu-item ${
-              paginaAtiva === "comparativo" ? "active" : ""
-            }`}
-            onClick={() => onNavigate("comparativo")}
-          >
-            <span>📈</span>
+          <NavLink to="/comparativo" className="menu-item">
+            <BarChart3 size={19} />
             Comparativo
-          </button>
+          </NavLink>
         )}
 
-        <button
-          className={`menu-item ${
-            paginaAtiva === "relatorios" ? "active" : ""
-          }`}
-          onClick={() => onNavigate("relatorios")}
-        >
-          <span>📄</span>
+        <NavLink to="/relatorios" className="menu-item">
+          <FileText size={19} />
           Relatórios
-        </button>
+        </NavLink>
 
         {admin && (
-          <button
-            className={`menu-item ${
-              paginaAtiva === "configuracoes" ? "active" : ""
-            }`}
-            onClick={() => onNavigate("configuracoes")}
-          >
-            <span>⚙️</span>
+          <NavLink to="/configuracoes" className="menu-item">
+            <Settings size={19} />
             Configurações
-          </button>
+          </NavLink>
         )}
       </nav>
 
       <div className="sidebar-bottom">
         <button className="menu-item">
-          <span>❓</span>
+          <HelpCircle size={19} />
           Ajuda
         </button>
 
-        <button className="menu-item" onClick={onLogout}>
-          <span>↪</span>
+        <button className="menu-item" onClick={handleLogout}>
+          <LogOut size={19} />
           Sair
         </button>
       </div>

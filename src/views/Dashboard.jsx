@@ -5,106 +5,41 @@ import {
   getProdutosMaisVendidos,
   getEstoqueBaixo,
 } from "../services/pdvService";
+import Sidebar from "../components/Sidebar";
 
-function Dashboard({ usuario, onNavigate }) {
-  const filial = getFiliais().find(
-    (filial) => filial.nome === usuario?.filial
-  );
+function Dashboard({ usuario, onNavigate, onLogout }) {
+  const filial = getFiliais().find((filial) => filial.nome === usuario?.filial);
 
-  const vendas = getVendasPorFilialEMes(
-    filial?.id,
-    "2026-09"
-  );
+  const vendas = getVendasPorFilialEMes(filial?.id, "2026-09");
 
   const faturamento = vendas.reduce(
     (total, venda) => total + venda.valorTotal,
-    0
+    0,
   );
 
   const quantidadeVendas = vendas.length;
 
   const produtosVendidos = vendas.reduce(
     (total, venda) => total + venda.quantidade,
-    0
+    0,
   );
 
-  const ticketMedio =
-    quantidadeVendas > 0
-      ? faturamento / quantidadeVendas
-      : 0;
+  const ticketMedio = quantidadeVendas > 0 ? faturamento / quantidadeVendas : 0;
 
-  const produtosMaisVendidos = getProdutosMaisVendidos(
-    filial?.id,
-    "2026-09"
-  );
+  const produtosMaisVendidos = getProdutosMaisVendidos(filial?.id, "2026-09");
 
-  const estoqueBaixo = getEstoqueBaixo(
-    filial?.id
-  );
+  const estoqueBaixo = getEstoqueBaixo(filial?.id);
 
   return (
     <main className="dashboard-page">
-
-      <aside className="sidebar">
-
-        <div className="sidebar-logo">
-          <div className="sidebar-icon">🏪</div>
-          <span>Gestão Comercial</span>
-        </div>
-
-        <nav className="sidebar-menu">
-
-          <button
-            className="menu-item active"
-            onClick={() => onNavigate("dashboard")}
-          >
-            <span>📊</span>
-            Dashboard
-          </button>
-
-          <button
-            className="menu-item"
-            onClick={() => onNavigate("vendas")}
-          >
-            <span>🛒</span>
-            Vendas
-          </button>
-
-          <button
-            className="menu-item"
-            onClick={() => onNavigate("estoque")}
-          >
-            <span>📦</span>
-            Estoque
-          </button>
-
-          <button className="menu-item">
-            <span>📄</span>
-            Relatórios
-          </button>
-
-        </nav>
-
-        <div className="sidebar-bottom">
-
-          <button className="menu-item">
-            <span>❓</span>
-            Ajuda
-          </button>
-
-          <button className="menu-item">
-            <span>↪</span>
-            Sair
-          </button>
-
-        </div>
-
-      </aside>
+      <Sidebar
+        paginaAtiva="dashboard"
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+      />
 
       <section className="dashboard-content">
-
         <header className="dashboard-header">
-
           <div>
             <h1>Dashboard</h1>
             <p>Visão geral do desempenho da sua filial</p>
@@ -120,11 +55,9 @@ function Dashboard({ usuario, onNavigate }) {
               <span>{usuario?.email}</span>
             </div>
           </div>
-
         </header>
 
         <div className="dashboard-filters">
-
           <div className="filter-group">
             <label>Filial</label>
 
@@ -140,15 +73,14 @@ function Dashboard({ usuario, onNavigate }) {
               <option>Setembro de 2026</option>
             </select>
           </div>
-
         </div>
 
         <section className="kpi-grid">
-
           <div className="kpi-card">
             <span className="kpi-title">Faturamento</span>
             <strong>
-              R$ {faturamento.toLocaleString("pt-BR", {
+              R${" "}
+              {faturamento.toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
               })}
             </strong>
@@ -164,7 +96,8 @@ function Dashboard({ usuario, onNavigate }) {
           <div className="kpi-card">
             <span className="kpi-title">Ticket médio</span>
             <strong>
-              R$ {ticketMedio.toLocaleString("pt-BR", {
+              R${" "}
+              {ticketMedio.toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
               })}
             </strong>
@@ -176,13 +109,10 @@ function Dashboard({ usuario, onNavigate }) {
             <strong>{produtosVendidos}</strong>
             <small>unidades</small>
           </div>
-
         </section>
 
         <section className="dashboard-tables">
-
           <div className="dashboard-card">
-
             <div className="card-header">
               <div>
                 <h2>Produtos mais vendidos</h2>
@@ -209,11 +139,9 @@ function Dashboard({ usuario, onNavigate }) {
                 ))}
               </tbody>
             </table>
-
           </div>
 
           <div className="dashboard-card">
-
             <div className="card-header">
               <div>
                 <h2>Estoque baixo</h2>
@@ -235,24 +163,16 @@ function Dashboard({ usuario, onNavigate }) {
                   <tr key={produto.nome}>
                     <td>{produto.nome}</td>
 
-                    <td className="stock-low">
-                      {produto.quantidade}
-                    </td>
+                    <td className="stock-low">{produto.quantidade}</td>
 
-                    <td>
-                      {produto.estoqueMinimo}
-                    </td>
+                    <td>{produto.estoqueMinimo}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
           </div>
-
         </section>
-
       </section>
-
     </main>
   );
 }
