@@ -11,18 +11,6 @@ export const filiais = [
     cidade: "Rio de Janeiro",
     gerente: "Ana Souza",
   },
-  {
-    id: 3,
-    nome: "Filial Sul",
-    cidade: "Rio de Janeiro",
-    gerente: "Pedro Santos",
-  },
-  {
-    id: 4,
-    nome: "Filial Oeste",
-    cidade: "Rio de Janeiro",
-    gerente: "Mariana Costa",
-  },
 ];
 
 export const categorias = [
@@ -126,30 +114,6 @@ export const vendas = [
     valorTotal: 1690,
     mes: "2026-09",
   },
-  {
-    id: 8,
-    filialId: 3,
-    produtoId: 1,
-    quantidade: 150,
-    valorTotal: 1800,
-    mes: "2026-09",
-  },
-  {
-    id: 9,
-    filialId: 3,
-    produtoId: 3,
-    quantidade: 120,
-    valorTotal: 1080,
-    mes: "2026-09",
-  },
-  {
-    id: 10,
-    filialId: 4,
-    produtoId: 2,
-    quantidade: 140,
-    valorTotal: 1820,
-    mes: "2026-09",
-  },
 ];
 
 export const estoque = [
@@ -183,7 +147,6 @@ export const estoque = [
     quantidade: 7,
     estoqueMinimo: 8,
   },
-
   {
     filialId: 2,
     produtoId: 1,
@@ -196,18 +159,22 @@ export const estoque = [
     quantidade: 6,
     estoqueMinimo: 10,
   },
-
   {
-    filialId: 3,
-    produtoId: 1,
-    quantidade: 12,
+    filialId: 2,
+    produtoId: 3,
+    quantidade: 7,
+    estoqueMinimo: 8,
+  },
+  {
+    filialId: 2,
+    produtoId: 4,
+    quantidade: 18,
     estoqueMinimo: 10,
   },
-
   {
-    filialId: 4,
-    produtoId: 2,
-    quantidade: 9,
+    filialId: 2,
+    produtoId: 5,
+    quantidade: 6,
     estoqueMinimo: 10,
   },
 ];

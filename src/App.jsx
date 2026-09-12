@@ -7,7 +7,7 @@ import Vendas from "./views/Vendas";
 import Estoque from "./views/Estoque";
 import Configuracoes from "./views/Configuracoes";
 import { autenticarUsuario } from "./controllers/authController";
-import { Usuario } from "./models/Usuario";
+import { usuariosIniciais } from "./data/usuariosData";
 import { ESTADOS } from "./models/AppState";
 
 function App() {
@@ -16,11 +16,9 @@ function App() {
   const [erro, setErro] = useState("");
   const [usuarioLogado, setUsuarioLogado] = useState(null);
   const [pagina, setPagina] = useState("dashboard");
+  const [usuarios, setUsuarios] = useState(usuariosIniciais);
 
-  const usuarios = [
-    new Usuario("admin@empresa.com", "123456", "ADMIN"),
-    new Usuario("gestor@empresa.com", "123456", "GESTOR", "Filial Centro"),
-  ];
+  console.log("Usuários carregados:", usuarios);
 
   function handleLogin(event) {
     event.preventDefault();
@@ -42,9 +40,22 @@ function App() {
   if (usuarioLogado) {
     if (usuarioLogado.perfil === ESTADOS.ADMIN) {
       if (pagina === "configuracoes") {
-        return <Configuracoes usuario={usuarioLogado} onNavigate={setPagina} />;
+        return (
+          <Configuracoes
+            usuario={usuarioLogado}
+            onNavigate={setPagina}
+            usuarios={usuarios}
+            setUsuarios={setUsuarios}
+          />
+        );
       }
-      return <AdminDashboard usuario={usuarioLogado} onNavigate={setPagina} />;
+      return (
+        <AdminDashboard
+          usuario={usuarioLogado}
+          onNavigate={setPagina}
+          onLogout={handleLogout}
+        />
+      );
     }
 
     if (pagina === "vendas") {
@@ -56,6 +67,11 @@ function App() {
     }
 
     return <Dashboard usuario={usuarioLogado} onNavigate={setPagina} />;
+  }
+
+  function handleLogout() {
+    setUsuarioLogado(null);
+    setPagina("dashboard");
   }
 
   return (
