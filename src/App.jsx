@@ -4,6 +4,7 @@ import { useState } from "react";
 import Dashboard from "./components/Dashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import Vendas from "./components/Vendas";
+import Estoque from "./components/Estoque";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -54,6 +55,15 @@ function App() {
     if (pagina === "vendas") {
       return (
         <Vendas
+          usuario={usuarioLogado}
+          onNavigate={setPagina}
+        />
+      );
+    }
+
+    if (pagina === "estoque") {
+      return (
+        <Estoque
           usuario={usuarioLogado}
           onNavigate={setPagina}
         />

@@ -50,7 +50,10 @@ function Vendas({ usuario, onNavigate }) {
             Vendas
           </button>
 
-          <button className="menu-item">
+          <button
+            className="menu-item"
+            onClick={() => onNavigate("estoque")}
+          >
             <span>📦</span>
             Estoque
           </button>
