@@ -6,7 +6,7 @@ import {
   getEstoqueBaixo,
 } from "../services/pdvService";
 
-function Dashboard({ usuario }) {
+function Dashboard({ usuario, onNavigate }) {
   const filial = getFiliais().find(
     (filial) => filial.nome === usuario?.filial
   );
@@ -54,12 +54,18 @@ function Dashboard({ usuario }) {
 
         <nav className="sidebar-menu">
 
-          <button className="menu-item active">
+          <button
+            className="menu-item active"
+            onClick={() => onNavigate("dashboard")}
+          >
             <span>📊</span>
             Dashboard
           </button>
 
-          <button className="menu-item">
+          <button
+            className="menu-item"
+            onClick={() => onNavigate("vendas")}
+          >
             <span>🛒</span>
             Vendas
           </button>

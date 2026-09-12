@@ -3,12 +3,14 @@ import { useState } from "react";
 
 import Dashboard from "./components/Dashboard";
 import AdminDashboard from "./components/AdminDashboard";
+import Vendas from "./components/Vendas";
 
 function App() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [usuarioLogado, setUsuarioLogado] = useState(null);
+  const [pagina, setPagina] = useState("dashboard");
 
   const usuarios = [
     {
@@ -49,7 +51,21 @@ function App() {
       return <AdminDashboard usuario={usuarioLogado} />;
     }
 
-    return <Dashboard usuario={usuarioLogado} />;
+    if (pagina === "vendas") {
+      return (
+        <Vendas
+          usuario={usuarioLogado}
+          onNavigate={setPagina}
+        />
+      );
+    }
+
+    return (
+      <Dashboard
+        usuario={usuarioLogado}
+        onNavigate={setPagina}
+      />
+    );
   }
 
   return (
