@@ -5,6 +5,7 @@ import Dashboard from "./components/Dashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import Vendas from "./components/Vendas";
 import Estoque from "./components/Estoque";
+import Configuracoes from "./components/Configuracoes";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -49,7 +50,20 @@ function App() {
 
   if (usuarioLogado) {
     if (usuarioLogado.perfil === "ADMIN") {
-      return <AdminDashboard usuario={usuarioLogado} />;
+      if (pagina === "configuracoes") {
+        return (
+          <Configuracoes
+            usuario={usuarioLogado}
+            onNavigate={setPagina}
+          />
+        );
+      }
+      return (
+        <AdminDashboard
+          usuario={usuarioLogado}
+          onNavigate={setPagina}
+        />
+      );
     }
 
     if (pagina === "vendas") {

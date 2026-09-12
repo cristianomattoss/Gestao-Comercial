@@ -1,6 +1,6 @@
 import "./Dashboard.css";
 
-function AdminDashboard({ usuario }) {
+function AdminDashboard({ usuario, onNavigate }) {
   return (
     <main className="dashboard-page">
 
@@ -43,7 +43,10 @@ function AdminDashboard({ usuario }) {
             Relatórios
           </button>
 
-          <button className="menu-item">
+          <button
+            className="menu-item"
+            onClick={() => onNavigate("configuracoes")}
+          >
             <span>⚙️</span>
             Configurações
           </button>
