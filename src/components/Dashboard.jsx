@@ -1,10 +1,46 @@
 import "./Dashboard.css";
-import { getEstoque, getProdutos, getVendas } from "../services/pdvService";
+import {
+  getFiliais,
+  getVendasPorFilialEMes,
+  getProdutosMaisVendidos,
+  getEstoqueBaixo,
+} from "../services/pdvService";
 
 function Dashboard({ usuario }) {
-  const vendas = getVendas();
-  const produtos = getProdutos();
-  const estoque = getEstoque();
+  const filial = getFiliais().find(
+    (filial) => filial.nome === usuario?.filial
+  );
+
+  const vendas = getVendasPorFilialEMes(
+    filial?.id,
+    "2026-09"
+  );
+
+  const faturamento = vendas.reduce(
+    (total, venda) => total + venda.valorTotal,
+    0
+  );
+
+  const quantidadeVendas = vendas.length;
+
+  const produtosVendidos = vendas.reduce(
+    (total, venda) => total + venda.quantidade,
+    0
+  );
+
+  const ticketMedio =
+    quantidadeVendas > 0
+      ? faturamento / quantidadeVendas
+      : 0;
+
+  const produtosMaisVendidos = getProdutosMaisVendidos(
+    filial?.id,
+    "2026-09"
+  );
+
+  const estoqueBaixo = getEstoqueBaixo(
+    filial?.id
+  );
 
   return (
     <main className="dashboard-page">
@@ -102,25 +138,33 @@ function Dashboard({ usuario }) {
 
           <div className="kpi-card">
             <span className="kpi-title">Faturamento</span>
-            <strong>R$ 48.750,00</strong>
+            <strong>
+              R$ {faturamento.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
+            </strong>
             <small>Setembro de 2026</small>
           </div>
 
           <div className="kpi-card">
             <span className="kpi-title">Vendas</span>
-            <strong>342</strong>
+            <strong>{quantidadeVendas}</strong>
             <small>vendas realizadas</small>
           </div>
 
           <div className="kpi-card">
             <span className="kpi-title">Ticket médio</span>
-            <strong>R$ 142,54</strong>
+            <strong>
+              R$ {ticketMedio.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
+            </strong>
             <small>por venda</small>
           </div>
 
           <div className="kpi-card">
             <span className="kpi-title">Produtos vendidos</span>
-            <strong>1.284</strong>
+            <strong>{produtosVendidos}</strong>
             <small>unidades</small>
           </div>
 
@@ -147,31 +191,13 @@ function Dashboard({ usuario }) {
               </thead>
 
               <tbody>
-
-                <tr>
-                  <td>Café Tradicional 500g</td>
-                  <td>Alimentos</td>
-                  <td>186</td>
-                </tr>
-
-                <tr>
-                  <td>Arroz 5kg</td>
-                  <td>Alimentos</td>
-                  <td>142</td>
-                </tr>
-
-                <tr>
-                  <td>Refrigerante 2L</td>
-                  <td>Bebidas</td>
-                  <td>128</td>
-                </tr>
-
-                <tr>
-                  <td>Leite Integral 1L</td>
-                  <td>Laticínios</td>
-                  <td>115</td>
-                </tr>
-
+                {produtosMaisVendidos.map((produto) => (
+                  <tr key={produto.nome}>
+                    <td>{produto.nome}</td>
+                    <td>{produto.categoria}</td>
+                    <td>{produto.quantidade}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
 
@@ -196,25 +222,19 @@ function Dashboard({ usuario }) {
               </thead>
 
               <tbody>
+                {estoqueBaixo.map((produto) => (
+                  <tr key={produto.nome}>
+                    <td>{produto.nome}</td>
 
-                <tr>
-                  <td>Café Tradicional 500g</td>
-                  <td className="stock-low">8</td>
-                  <td>10</td>
-                </tr>
+                    <td className="stock-low">
+                      {produto.quantidade}
+                    </td>
 
-                <tr>
-                  <td>Leite Integral 1L</td>
-                  <td className="stock-low">5</td>
-                  <td>10</td>
-                </tr>
-
-                <tr>
-                  <td>Açúcar 1kg</td>
-                  <td className="stock-low">7</td>
-                  <td>8</td>
-                </tr>
-
+                    <td>
+                      {produto.estoqueMinimo}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
 
