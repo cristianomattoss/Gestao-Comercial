@@ -1,0 +1,5 @@
+export const ESTADOS = {
+  DESLOGADO: "DESLOGADO",
+  ADMIN: "ADMIN",
+  GESTOR: "GESTOR",
+};

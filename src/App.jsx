@@ -8,6 +8,7 @@ import Estoque from "./views/Estoque";
 import Configuracoes from "./views/Configuracoes";
 import { autenticarUsuario } from "./controllers/authController";
 import { Usuario } from "./models/Usuario";
+import { ESTADOS } from "./models/AppState";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -39,7 +40,7 @@ function App() {
   }
 
   if (usuarioLogado) {
-    if (usuarioLogado.perfil === "ADMIN") {
+    if (usuarioLogado.perfil === ESTADOS.ADMIN) {
       if (pagina === "configuracoes") {
         return <Configuracoes usuario={usuarioLogado} onNavigate={setPagina} />;
       }
