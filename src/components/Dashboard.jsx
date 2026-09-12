@@ -1,6 +1,11 @@
 import "./Dashboard.css";
+import { getEstoque, getProdutos, getVendas } from "../services/pdvService";
 
 function Dashboard({ usuario }) {
+  const vendas = getVendas();
+  const produtos = getProdutos();
+  const estoque = getEstoque();
+
   return (
     <main className="dashboard-page">
 
