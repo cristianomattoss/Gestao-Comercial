@@ -1,11 +1,13 @@
 import "./App.css";
 import { useState } from "react";
 
-import Dashboard from "./components/Dashboard";
-import AdminDashboard from "./components/AdminDashboard";
-import Vendas from "./components/Vendas";
-import Estoque from "./components/Estoque";
-import Configuracoes from "./components/Configuracoes";
+import Dashboard from "./views/Dashboard";
+import AdminDashboard from "./views/AdminDashboard";
+import Vendas from "./views/Vendas";
+import Estoque from "./views/Estoque";
+import Configuracoes from "./views/Configuracoes";
+import { autenticarUsuario } from "./controllers/authController";
+import { Usuario } from "./models/Usuario";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -15,17 +17,8 @@ function App() {
   const [pagina, setPagina] = useState("dashboard");
 
   const usuarios = [
-    {
-      email: "admin@empresa.com",
-      senha: "123456",
-      perfil: "ADMIN",
-    },
-    {
-      email: "gestor@empresa.com",
-      senha: "123456",
-      perfil: "GESTOR",
-      filial: "Filial Centro",
-    },
+    new Usuario("admin@empresa.com", "123456", "ADMIN"),
+    new Usuario("gestor@empresa.com", "123456", "GESTOR", "Filial Centro"),
   ];
 
   function handleLogin(event) {
@@ -33,10 +26,7 @@ function App() {
 
     setErro("");
 
-    const usuarioEncontrado = usuarios.find(
-      (usuario) =>
-        usuario.email === email && usuario.senha === senha
-    );
+    const usuarioEncontrado = autenticarUsuario(usuarios, email, senha);
 
     if (!usuarioEncontrado) {
       setErro("E-mail ou senha inválidos.");
@@ -51,45 +41,20 @@ function App() {
   if (usuarioLogado) {
     if (usuarioLogado.perfil === "ADMIN") {
       if (pagina === "configuracoes") {
-        return (
-          <Configuracoes
-            usuario={usuarioLogado}
-            onNavigate={setPagina}
-          />
-        );
+        return <Configuracoes usuario={usuarioLogado} onNavigate={setPagina} />;
       }
-      return (
-        <AdminDashboard
-          usuario={usuarioLogado}
-          onNavigate={setPagina}
-        />
-      );
+      return <AdminDashboard usuario={usuarioLogado} onNavigate={setPagina} />;
     }
 
     if (pagina === "vendas") {
-      return (
-        <Vendas
-          usuario={usuarioLogado}
-          onNavigate={setPagina}
-        />
-      );
+      return <Vendas usuario={usuarioLogado} onNavigate={setPagina} />;
     }
 
     if (pagina === "estoque") {
-      return (
-        <Estoque
-          usuario={usuarioLogado}
-          onNavigate={setPagina}
-        />
-      );
+      return <Estoque usuario={usuarioLogado} onNavigate={setPagina} />;
     }
 
-    return (
-      <Dashboard
-        usuario={usuarioLogado}
-        onNavigate={setPagina}
-      />
-    );
+    return <Dashboard usuario={usuarioLogado} onNavigate={setPagina} />;
   }
 
   return (
@@ -100,7 +65,11 @@ function App() {
 
           <h1>Gestão Comercial</h1>
 
-          <p>Dados que impulsionam<br />suas decisões</p>
+          <p>
+            Dados que impulsionam
+            <br />
+            suas decisões
+          </p>
 
           <div className="brand-line"></div>
 
@@ -127,8 +96,7 @@ function App() {
         <div className="login-form-area">
           <div className="login-form">
             <div className="account-message">
-              Não tem uma conta?{" "}
-              <span>Fale com o administrador</span>
+              Não tem uma conta? <span>Fale com o administrador</span>
             </div>
 
             <h2>Bem-vindo!</h2>
@@ -142,9 +110,7 @@ function App() {
                   type="email"
                   placeholder="Digite seu e-mail"
                   value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
+                  onChange={(event) => setEmail(event.target.value)}
                   autoComplete="email"
                   required
                 />
@@ -157,19 +123,13 @@ function App() {
                   type="password"
                   placeholder="Digite sua senha"
                   value={senha}
-                  onChange={(event) =>
-                    setSenha(event.target.value)
-                  }
+                  onChange={(event) => setSenha(event.target.value)}
                   autoComplete="current-password"
                   required
                 />
               </div>
 
-              {erro && (
-                <p className="login-error">
-                  {erro}
-                </p>
-              )}
+              {erro && <p className="login-error">{erro}</p>}
 
               <button type="submit">Entrar →</button>
             </form>
