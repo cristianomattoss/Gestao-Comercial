@@ -1,7 +1,56 @@
 import "./Dashboard.css";
 import Sidebar from "../components/Sidebar";
 
+import {
+  getFiliais,
+  getVendas,
+  getEstoque,
+  getProdutos,
+} from "../services/pdvService";
+
+import { meses } from "../data/pdvData";
+
 function AdminDashboard({ usuario, onNavigate, onLogout }) {
+  const filiais = getFiliais();
+  const vendas = getVendas();
+  const estoque = getEstoque();
+  const produtos = getProdutos();
+
+  const mesSelecionado = "2026-09";
+
+  const vendasDoMes = vendas.filter((venda) => venda.mes === mesSelecionado);
+
+  const faturamento = vendasDoMes.reduce(
+    (total, venda) => total + venda.valorTotal,
+    0,
+  );
+
+  const unidadesVendidas = vendasDoMes.reduce(
+    (total, venda) => total + venda.quantidade,
+    0,
+  );
+
+  const estoqueBaixo = estoque.filter(
+    (item) => item.quantidade <= item.estoqueMinimo,
+  );
+
+  const desempenhoFiliais = filiais.map((filial) => {
+    const vendasFilial = vendasDoMes.filter(
+      (venda) => venda.filialId === filial.id,
+    );
+
+    const faturamentoFilial = vendasFilial.reduce(
+      (total, venda) => total + venda.valorTotal,
+      0,
+    );
+
+    return {
+      ...filial,
+      vendas: vendasFilial.length,
+      faturamento: faturamentoFilial,
+    };
+  });
+
   return (
     <main className="dashboard-page">
       <Sidebar
@@ -15,11 +64,14 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
         <header className="dashboard-header">
           <div>
             <h1>Dashboard</h1>
+
             <p>Visão geral do desempenho da empresa</p>
           </div>
 
           <div className="user-info">
-            <div className="user-avatar">A</div>
+            <div className="user-avatar">
+              {usuario?.email?.charAt(0).toUpperCase()}
+            </div>
 
             <div>
               <strong>Administrador</strong>
@@ -32,8 +84,15 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           <div className="filter-group">
             <label>Período</label>
 
-            <select>
-              <option>Setembro de 2026</option>
+            <select
+              value={mesSelecionado}
+              onChange={(event) => setMesSelecionado(event.target.value)}
+            >
+              {meses.map((mes) => (
+                <option key={mes.valor} value={mes.valor}>
+                  {mes.nome}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -42,7 +101,12 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Faturamento</span>
 
-            <strong>R$ 186.450,00</strong>
+            <strong>
+              R${" "}
+              {faturamento.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
+            </strong>
 
             <small>Todas as filiais</small>
           </div>
@@ -50,7 +114,7 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Vendas</span>
 
-            <strong>1.284</strong>
+            <strong>{vendasDoMes.length}</strong>
 
             <small>vendas realizadas</small>
           </div>
@@ -58,7 +122,7 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Filiais</span>
 
-            <strong>4</strong>
+            <strong>{filiais.length}</strong>
 
             <small>filiais cadastradas</small>
           </div>
@@ -66,7 +130,7 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Produtos vendidos</span>
 
-            <strong>4.832</strong>
+            <strong>{unidadesVendidas}</strong>
 
             <small>unidades</small>
           </div>
@@ -92,29 +156,20 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
               </thead>
 
               <tbody>
-                <tr>
-                  <td>Filial Centro</td>
-                  <td>342</td>
-                  <td>R$ 48.750,00</td>
-                </tr>
+                {desempenhoFiliais.map((filial) => (
+                  <tr key={filial.id}>
+                    <td>{filial.nome}</td>
 
-                <tr>
-                  <td>Filial Norte</td>
-                  <td>318</td>
-                  <td>R$ 46.280,00</td>
-                </tr>
+                    <td>{filial.vendas}</td>
 
-                <tr>
-                  <td>Filial Sul</td>
-                  <td>326</td>
-                  <td>R$ 45.620,00</td>
-                </tr>
-
-                <tr>
-                  <td>Filial Oeste</td>
-                  <td>298</td>
-                  <td>R$ 45.800,00</td>
-                </tr>
+                    <td>
+                      R${" "}
+                      {filial.faturamento.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -138,23 +193,25 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
               </thead>
 
               <tbody>
-                <tr>
-                  <td>Café Tradicional 500g</td>
-                  <td>Centro</td>
-                  <td className="stock-low">8</td>
-                </tr>
+                {estoqueBaixo.map((item) => {
+                  const produto = produtos.find(
+                    (produto) => produto.id === item.produtoId,
+                  );
 
-                <tr>
-                  <td>Leite Integral 1L</td>
-                  <td>Norte</td>
-                  <td className="stock-low">5</td>
-                </tr>
+                  const filial = filiais.find(
+                    (filial) => filial.id === item.filialId,
+                  );
 
-                <tr>
-                  <td>Açúcar 1kg</td>
-                  <td>Sul</td>
-                  <td className="stock-low">7</td>
-                </tr>
+                  return (
+                    <tr key={`${item.filialId}-${item.produtoId}`}>
+                      <td>{produto?.nome}</td>
+
+                      <td>{filial?.nome}</td>
+
+                      <td className="stock-low">{item.quantidade}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import Sidebar from "../components/Sidebar";
 import { getFiliais, getVendas } from "../services/pdvService";
+import { meses } from "../data/pdvData";
 
 function Comparativo({ usuario, onLogout }) {
   const filiais = getFiliais();

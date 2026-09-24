@@ -10,6 +10,7 @@ import {
 
 import { ESTADOS } from "../models/AppState";
 import Sidebar from "../components/Sidebar";
+import { meses } from "../data/pdvData";
 
 function Vendas({ usuario, onLogout }) {
   const filiais = getFiliais();
@@ -101,7 +102,11 @@ function Vendas({ usuario, onLogout }) {
               value={mesSelecionado}
               onChange={(event) => setMesSelecionado(event.target.value)}
             >
-              <option value="2026-09">Setembro de 2026</option>
+              {meses.map((mes) => (
+                <option key={mes.valor} value={mes.valor}>
+                  {mes.nome}
+                </option>
+              ))}
             </select>
           </div>
         </div>

@@ -6,6 +6,7 @@ import {
   getEstoqueBaixo,
 } from "../services/pdvService";
 import Sidebar from "../components/Sidebar";
+import { meses } from "../data/pdvData";
 
 function Dashboard({ usuario, onNavigate, onLogout }) {
   const filial = getFiliais().find((filial) => filial.nome === usuario?.filial);
@@ -69,8 +70,15 @@ function Dashboard({ usuario, onNavigate, onLogout }) {
           <div className="filter-group">
             <label>Período</label>
 
-            <select>
-              <option>Setembro de 2026</option>
+            <select
+              value={mesSelecionado}
+              onChange={(event) => setMesSelecionado(event.target.value)}
+            >
+              {meses.map((mes) => (
+                <option key={mes.valor} value={mes.valor}>
+                  {mes.nome}
+                </option>
+              ))}
             </select>
           </div>
         </div>

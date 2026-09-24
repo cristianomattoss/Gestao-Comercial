@@ -1,3 +1,9 @@
+export const meses = [
+  { valor: "2026-07", nome: "Julho de 2026" },
+  { valor: "2026-08", nome: "Agosto de 2026" },
+  { valor: "2026-09", nome: "Setembro de 2026" },
+];
+
 export const filiais = [
   {
     id: 1,
@@ -57,8 +63,93 @@ export const produtos = [
 ];
 
 export const vendas = [
+  // JULHO
   {
     id: 1,
+    filialId: 1,
+    produtoId: 1,
+    quantidade: 150,
+    valorTotal: 1800,
+    mes: "2026-07",
+  },
+  {
+    id: 2,
+    filialId: 1,
+    produtoId: 2,
+    quantidade: 120,
+    valorTotal: 1560,
+    mes: "2026-07",
+  },
+  {
+    id: 3,
+    filialId: 1,
+    produtoId: 3,
+    quantidade: 100,
+    valorTotal: 900,
+    mes: "2026-07",
+  },
+  {
+    id: 4,
+    filialId: 2,
+    produtoId: 1,
+    quantidade: 130,
+    valorTotal: 1560,
+    mes: "2026-07",
+  },
+  {
+    id: 5,
+    filialId: 2,
+    produtoId: 2,
+    quantidade: 110,
+    valorTotal: 1430,
+    mes: "2026-07",
+  },
+
+  // AGOSTO
+  {
+    id: 6,
+    filialId: 1,
+    produtoId: 1,
+    quantidade: 170,
+    valorTotal: 2040,
+    mes: "2026-08",
+  },
+  {
+    id: 7,
+    filialId: 1,
+    produtoId: 2,
+    quantidade: 135,
+    valorTotal: 1755,
+    mes: "2026-08",
+  },
+  {
+    id: 8,
+    filialId: 1,
+    produtoId: 3,
+    quantidade: 115,
+    valorTotal: 1035,
+    mes: "2026-08",
+  },
+  {
+    id: 9,
+    filialId: 2,
+    produtoId: 1,
+    quantidade: 145,
+    valorTotal: 1740,
+    mes: "2026-08",
+  },
+  {
+    id: 10,
+    filialId: 2,
+    produtoId: 2,
+    quantidade: 125,
+    valorTotal: 1625,
+    mes: "2026-08",
+  },
+
+  // SETEMBRO
+  {
+    id: 11,
     filialId: 1,
     produtoId: 1,
     quantidade: 186,
@@ -66,7 +157,7 @@ export const vendas = [
     mes: "2026-09",
   },
   {
-    id: 2,
+    id: 12,
     filialId: 1,
     produtoId: 2,
     quantidade: 142,
@@ -74,7 +165,7 @@ export const vendas = [
     mes: "2026-09",
   },
   {
-    id: 3,
+    id: 13,
     filialId: 1,
     produtoId: 3,
     quantidade: 128,
@@ -82,7 +173,7 @@ export const vendas = [
     mes: "2026-09",
   },
   {
-    id: 4,
+    id: 14,
     filialId: 1,
     produtoId: 4,
     quantidade: 115,
@@ -90,16 +181,15 @@ export const vendas = [
     mes: "2026-09",
   },
   {
-    id: 5,
+    id: 15,
     filialId: 1,
     produtoId: 5,
     quantidade: 98,
     valorTotal: 490,
     mes: "2026-09",
   },
-
   {
-    id: 6,
+    id: 16,
     filialId: 2,
     produtoId: 1,
     quantidade: 160,
@@ -107,7 +197,7 @@ export const vendas = [
     mes: "2026-09",
   },
   {
-    id: 7,
+    id: 17,
     filialId: 2,
     produtoId: 2,
     quantidade: 130,

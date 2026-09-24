@@ -4,6 +4,7 @@ import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { getFiliais, getVendas, getEstoque } from "../services/pdvService";
 import { ESTADOS } from "../models/AppState";
+import { meses } from "../data/pdvData";
 
 function Relatorios({ usuario, onLogout }) {
   const filiais = getFiliais();
@@ -77,7 +78,11 @@ function Relatorios({ usuario, onLogout }) {
               value={mesSelecionado}
               onChange={(event) => setMesSelecionado(event.target.value)}
             >
-              <option value="2026-09">Setembro de 2026</option>
+              {meses.map((mes) => (
+                <option key={mes.valor} value={mes.valor}>
+                  {mes.nome}
+                </option>
+              ))}
             </select>
           </div>
         </div>
