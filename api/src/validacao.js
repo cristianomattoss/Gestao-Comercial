@@ -48,3 +48,34 @@ export function resolverEscopoFilial(usuario, filialIdSolicitada) {
 
   return usuario.filialId;
 }
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SENHA_MINIMA = 6;
+
+// UC03: e-mail válido, senha mínima, perfil conhecido e filial obrigatória para gestor.
+export function lerDadosUsuario(body = {}) {
+  const email = textoObrigatorio(body.email, "e-mail").toLowerCase();
+
+  if (!EMAIL.test(email)) {
+    throw badRequest("Informe um e-mail válido.");
+  }
+
+  if (typeof body.senha !== "string" || body.senha.length < SENHA_MINIMA) {
+    throw badRequest(`A senha deve ter no mínimo ${SENHA_MINIMA} caracteres.`);
+  }
+
+  if (body.perfil !== "ADMIN" && body.perfil !== "GESTOR") {
+    throw badRequest("Perfil inválido. Use ADMIN ou GESTOR.");
+  }
+
+  if (body.perfil === "GESTOR") {
+    return {
+      email,
+      senha: body.senha,
+      perfil: body.perfil,
+      filialId: lerId(body.filialId, "filialId"),
+    };
+  }
+
+  return { email, senha: body.senha, perfil: body.perfil, filialId: null };
+}

@@ -30,7 +30,7 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
 - Usuários de seed: `admin@empresa.com`, `gestor1@empresa.com`, `gestor2@empresa.com` (senha `123456`).
 
 ## Estado atual (diverge do PDF em alguns pontos)
-- O **frontend já consome a API** em login (JWT em `localStorage`), filiais, vendas, estoque, dashboards e comparativo (`web/src/services/*Service.js` → `controllers/`). Relatórios (prévia, exportação e recentes) também. Só a aba de usuários em Configurações ainda usa mocks (`web/src/data`).
+- O **frontend já consome a API** em login (JWT em `localStorage`), filiais, vendas, estoque, dashboards e comparativo (`web/src/services/*Service.js` → `controllers/`). Relatórios (prévia, exportação e recentes) e usuários (Configurações) também; só a aba Empresa é placeholder.
 - A API (`api/src`, camadas `routes → controllers → models`) expõe, todos com `Authorization: Bearer <token>`:
   - `POST /auth/login`, `GET /auth/me`
   - `GET /filiais`, `GET /filiais/:id` (gestor só a própria); `POST /filiais`, `PUT /filiais/:id` (ADMIN)
@@ -38,9 +38,10 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
   - `GET /vendas/comparativo?mes&filialIds=1,2[&ordenarPor=faturamento|ticketMedio]` e `/vendas/participacao-filiais?mes` (ADMIN)
   - `GET /estoque[?filialId&categoriaId&situacao=NORMAL|ATENCAO|BAIXO|SEM_ESTOQUE]` (itens com State, resumo e alertas)
   - `GET /categorias`, `GET /produtos[?categoriaId]`
+  - `GET/POST /usuarios`, `PATCH /usuarios/:id {ativo}` (ADMIN; e-mail único, gestor exige filialId, não inativa a si mesmo). Login de usuário inativo retorna 403
   - `POST /relatorios` (RelatorioBuilder: tipo, periodoInicio/Fim AAAA-MM, filialId, categoriaId, produtoId → prévia + registro no histórico), `GET /relatorios/recentes`, `GET /relatorios/:id/exportar?formato=PDF|EXCEL|CSV`
 - O escopo do gestor (RN12) é aplicado em `resolverEscopoFilial` (`api/src/validacao.js`) antes das consultas. Testes: `npm test -w api` (não precisam de banco).
-- Ainda não existem: filtro de vendas por forma de pagamento, cadastro de usuários/empresa e usuário inativo. A migration `002` cria `relatorios_historico`.
+- Ainda não existem: filtro de vendas por forma de pagamento e cadastro da empresa. Migrations: `002` cria `relatorios_historico`, `003` adiciona `usuarios.ativo`. Um token já emitido de usuário inativado vale até expirar (a checagem de `ativo` é no login e em `/auth/me`).
 - O seed da API importa `web/src/data/pdvData.js`; ao remover os mocks, copiar os dados para o seed.
 - O PDF prevê que as vendas venham de **bases de PDV externas** (um adaptador por filial, somente leitura) e que o banco do sistema guarde só usuários, filiais, parâmetros e histórico de relatórios. Hoje tudo fica no mesmo Postgres. Não implementar a integração PDV sem alinhar com o usuário.
 

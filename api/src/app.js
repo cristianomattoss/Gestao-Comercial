@@ -8,6 +8,7 @@ import vendasRoutes from "./routes/vendas.js";
 import estoqueRoutes from "./routes/estoque.js";
 import catalogoRoutes from "./routes/catalogo.js";
 import relatoriosRoutes from "./routes/relatorios.js";
+import usuariosRoutes from "./routes/usuarios.js";
 
 export const app = express();
 
@@ -22,6 +23,7 @@ app.use("/filiais", filiaisRoutes);
 app.use("/vendas", vendasRoutes);
 app.use("/estoque", estoqueRoutes);
 app.use("/relatorios", relatoriosRoutes);
+app.use("/usuarios", usuariosRoutes);
 app.use("/", catalogoRoutes);
 
 app.use((req, res) => res.status(404).json({ erro: "Rota não encontrada." }));

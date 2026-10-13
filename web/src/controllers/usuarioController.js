@@ -1,7 +1,22 @@
-import { Usuario } from "../models/Usuario";
+import {
+  alterarSituacaoUsuario,
+  cadastrarUsuario,
+  listarUsuarios,
+} from "../services/usuarioService";
 
-export function criarUsuario(usuarios, email, senha, perfil, filial = null) {
-  const novoUsuario = new Usuario(email, senha, perfil, filial);
+export function carregarUsuarios() {
+  return listarUsuarios();
+}
 
-  return [...usuarios, novoUsuario];
+export function criarUsuario(email, senha, perfil, filialId) {
+  return cadastrarUsuario({
+    email: email.trim(),
+    senha,
+    perfil,
+    filialId: perfil === "GESTOR" ? Number(filialId) || undefined : undefined,
+  });
+}
+
+export function definirSituacao(id, ativo) {
+  return alterarSituacaoUsuario(id, ativo);
 }

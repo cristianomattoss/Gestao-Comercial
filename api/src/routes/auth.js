@@ -8,7 +8,7 @@ import { autenticar } from "../middleware/auth.js";
 const router = Router();
 
 const SELECT_USUARIO = `
-  SELECT u.id, u.email, u.senha_hash, u.perfil, u.filial_id, f.nome AS filial
+  SELECT u.id, u.email, u.senha_hash, u.perfil, u.ativo, u.filial_id, f.nome AS filial
   FROM usuarios u
   LEFT JOIN filiais f ON f.id = u.filial_id
 `;
@@ -39,6 +39,11 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ erro: "E-mail ou senha inválidos." });
   }
 
+  // UC01: credenciais corretas, mas o acesso foi inativado pelo administrador.
+  if (!row.ativo) {
+    return res.status(403).json({ erro: "Usuário inativo. Fale com o administrador." });
+  }
+
   const usuario = serializar(row);
   const token = jwt.sign(
     { perfil: usuario.perfil, filialId: usuario.filialId },
@@ -54,8 +59,8 @@ router.get("/me", autenticar, async (req, res) => {
     req.usuario.id,
   ]);
 
-  if (!rows[0]) {
-    return res.status(401).json({ erro: "Usuário não encontrado." });
+  if (!rows[0] || !rows[0].ativo) {
+    return res.status(401).json({ erro: "Usuário não encontrado ou inativo." });
   }
 
   res.json({ usuario: serializar(rows[0]) });

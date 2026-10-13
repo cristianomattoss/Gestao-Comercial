@@ -8,7 +8,7 @@ process.env.DATABASE_URL ??= "postgres://x:x@localhost:5432/x";
 process.env.JWT_SECRET ??= "segredo-de-teste";
 
 const { Estoque } = await import("../src/models/situacaoEstoque.js");
-const { resolverEscopoFilial } = await import("../src/validacao.js");
+const { resolverEscopoFilial, lerDadosUsuario } = await import("../src/validacao.js");
 const { app } = await import("../src/app.js");
 const { pool } = await import("../src/db.js");
 
@@ -107,4 +107,51 @@ test("validações de parâmetros", async () => {
     })).status,
     400,
   );
+});
+
+const enviar = (metodo, path, t, corpo) =>
+  fetch(base + path, {
+    method: metodo,
+    headers: { authorization: `Bearer ${t}`, "content-type": "application/json" },
+    body: JSON.stringify(corpo),
+  });
+
+test("usuários: somente administrador (RN01)", async () => {
+  assert.equal((await get("/usuarios")).status, 401);
+  assert.equal((await get("/usuarios", token("GESTOR", 1))).status, 403);
+  assert.equal(
+    (await enviar("POST", "/usuarios", token("GESTOR", 1), {})).status,
+    403,
+  );
+});
+
+test("usuários: validações do cadastro (UC03)", async () => {
+  const admin = token("ADMIN");
+  const valido = { email: "novo@empresa.com", senha: "123456", perfil: "GESTOR", filialId: 1 };
+  const post = (corpo) => enviar("POST", "/usuarios", admin, corpo);
+
+  assert.equal((await post({ ...valido, email: "sem-arroba" })).status, 400);
+  assert.equal((await post({ ...valido, senha: "123" })).status, 400);
+  assert.equal((await post({ ...valido, perfil: "OUTRO" })).status, 400);
+  assert.equal((await post({ ...valido, filialId: undefined })).status, 400); // gestor exige filial
+});
+
+test("usuários: não inativa o próprio usuário", async () => {
+  const admin = token("ADMIN"); // subject "1"
+
+  assert.equal((await enviar("PATCH", "/usuarios/1", admin, { ativo: false })).status, 400);
+  assert.equal((await enviar("PATCH", "/usuarios/2", admin, { ativo: "não" })).status, 400);
+});
+
+test("validação de usuário: gestor exige filial, administrador a ignora", () => {
+  const base = { email: " Gestor@Empresa.com ", senha: "123456" };
+
+  assert.deepEqual(lerDadosUsuario({ ...base, perfil: "GESTOR", filialId: "2" }), {
+    email: "gestor@empresa.com",
+    senha: "123456",
+    perfil: "GESTOR",
+    filialId: 2,
+  });
+  assert.equal(lerDadosUsuario({ ...base, perfil: "ADMIN", filialId: 2 }).filialId, null);
+  assert.throws(() => lerDadosUsuario({ ...base, perfil: "GESTOR" }), { status: 400 });
 });

@@ -17,7 +17,6 @@ import {
   encerrarSessao,
   recuperarSessao,
 } from "./controllers/authController";
-import { usuariosIniciais } from "./data/usuariosData";
 import { ESTADOS } from "./models/AppState";
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [usuarioLogado, setUsuarioLogado] = useState(null);
-  const [usuarios, setUsuarios] = useState(usuariosIniciais);
 
   const [carregando, setCarregando] = useState(true);
   const [entrando, setEntrando] = useState(false);
@@ -262,8 +260,6 @@ function App() {
             usuarioLogado && usuarioLogado.perfil === ESTADOS.ADMIN ? (
               <Configuracoes
                 usuario={usuarioLogado}
-                usuarios={usuarios}
-                setUsuarios={setUsuarios}
                 onLogout={handleLogout}
               />
             ) : (

@@ -10,8 +10,6 @@ import Sidebar from "../components/Sidebar";
 function Configuracoes({
   usuario,
   onNavigate,
-  usuarios,
-  setUsuarios,
   onLogout,
 }) {
   const [filiais, setFiliais] = useState([]);
@@ -78,11 +76,7 @@ function Configuracoes({
         )}
 
         {abaAtiva === "usuarios" && (
-          <UsuariosConfig
-            usuarios={usuarios}
-            setUsuarios={setUsuarios}
-            filiais={filiais}
-          />
+          <UsuariosConfig filiais={filiais} usuarioLogado={usuario} />
         )}
       </section>
     </main>

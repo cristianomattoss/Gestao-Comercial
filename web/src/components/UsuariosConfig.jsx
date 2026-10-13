@@ -1,31 +1,59 @@
-import { useState } from "react";
-import { criarUsuario } from "../controllers/usuarioController";
+import { useEffect, useState } from "react";
+import {
+  carregarUsuarios,
+  criarUsuario,
+  definirSituacao,
+} from "../controllers/usuarioController";
 
-function UsuariosConfig({ usuarios, setUsuarios, filiais }) {
+function UsuariosConfig({ filiais, usuarioLogado }) {
+  const [usuarios, setUsuarios] = useState([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [erro, setErro] = useState("");
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    carregarUsuarios()
+      .then(setUsuarios)
+      .catch((e) => setErro(e.message));
+  }, []);
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [perfil, setPerfil] = useState("GESTOR");
   const [filial, setFilial] = useState("");
 
-  function cadastrarUsuario() {
-    const usuariosAtualizados = criarUsuario(
-      usuarios,
-      email,
-      senha,
-      perfil,
-      perfil === "GESTOR" ? filial : null,
-    );
+  async function cadastrarUsuario() {
+    setErro("");
+    setSalvando(true);
 
-    setUsuarios(usuariosAtualizados);
+    try {
+      const novoUsuario = await criarUsuario(email, senha, perfil, filial);
 
-    setEmail("");
-    setSenha("");
-    setPerfil("GESTOR");
-    setFilial("");
+      setUsuarios([...usuarios, novoUsuario]);
 
-    setMostrarFormulario(false);
+      setEmail("");
+      setSenha("");
+      setPerfil("GESTOR");
+      setFilial("");
+
+      setMostrarFormulario(false);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function alternarSituacao(usuario) {
+    setErro("");
+
+    try {
+      const atualizado = await definirSituacao(usuario.id, !usuario.ativo);
+
+      setUsuarios(usuarios.map((u) => (u.id === atualizado.id ? atualizado : u)));
+    } catch (e) {
+      setErro(e.message);
+    }
   }
 
   return (
@@ -92,7 +120,7 @@ function UsuariosConfig({ usuarios, setUsuarios, filiais }) {
                   <option value="">Selecione uma filial</option>
 
                   {filiais.map((filialItem) => (
-                    <option key={filialItem.id} value={filialItem.nome}>
+                    <option key={filialItem.id} value={filialItem.id}>
                       {filialItem.nome}
                     </option>
                   ))}
@@ -100,6 +128,8 @@ function UsuariosConfig({ usuarios, setUsuarios, filiais }) {
               </div>
             )}
           </div>
+
+          {erro && <p className="login-error">{erro}</p>}
 
           <div className="form-actions">
             <button
@@ -109,8 +139,12 @@ function UsuariosConfig({ usuarios, setUsuarios, filiais }) {
               Cancelar
             </button>
 
-            <button className="primary-button" onClick={cadastrarUsuario}>
-              Cadastrar usuário
+            <button
+              className="primary-button"
+              onClick={cadastrarUsuario}
+              disabled={salvando}
+            >
+              {salvando ? "Salvando..." : "Cadastrar usuário"}
             </button>
           </div>
         </div>
@@ -131,18 +165,22 @@ function UsuariosConfig({ usuarios, setUsuarios, filiais }) {
           </button>
         </div>
 
+        {!mostrarFormulario && erro && <p className="login-error">{erro}</p>}
+
         <table className="data-table">
           <thead>
             <tr>
               <th>E-mail</th>
               <th>Perfil</th>
               <th>Filial</th>
+              <th>Situação</th>
+              <th></th>
             </tr>
           </thead>
 
           <tbody>
-            {usuarios.map((usuario, index) => (
-              <tr key={index}>
+            {usuarios.map((usuario) => (
+              <tr key={usuario.id}>
                 <td>{usuario.email}</td>
 
                 <td>
@@ -150,6 +188,19 @@ function UsuariosConfig({ usuarios, setUsuarios, filiais }) {
                 </td>
 
                 <td>{usuario.filial || "Todas as filiais"}</td>
+
+                <td>{usuario.ativo ? "Ativo" : "Inativo"}</td>
+
+                <td>
+                  {usuario.email !== usuarioLogado?.email && (
+                    <button
+                      className="secondary-button"
+                      onClick={() => alternarSituacao(usuario)}
+                    >
+                      {usuario.ativo ? "Inativar" : "Reativar"}
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
