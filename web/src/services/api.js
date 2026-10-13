@@ -21,7 +21,7 @@ export function salvarToken(token) {
   }
 }
 
-export async function requisitar(caminho, { metodo = "GET", corpo } = {}) {
+async function enviar(caminho, { metodo = "GET", corpo } = {}) {
   const token = obterToken();
   let resposta;
 
@@ -38,13 +38,32 @@ export async function requisitar(caminho, { metodo = "GET", corpo } = {}) {
     throw new Error("Não foi possível conectar ao servidor.");
   }
 
-  const dados = await resposta.json().catch(() => null);
-
   if (!resposta.ok) {
+    const dados = await resposta.json().catch(() => null);
     const erro = new Error(dados?.erro ?? "Erro ao processar a requisição.");
     erro.status = resposta.status;
     throw erro;
   }
 
-  return dados;
+  return resposta;
+}
+
+export async function requisitar(caminho, opcoes) {
+  const resposta = await enviar(caminho, opcoes);
+
+  return resposta.json();
+}
+
+// Baixa um arquivo autenticado (o token vai no cabeçalho, não na URL).
+export async function baixarArquivo(caminho) {
+  const resposta = await enviar(caminho);
+  const disposicao = resposta.headers.get("Content-Disposition") ?? "";
+  const nome = /filename="?([^";]+)"?/.exec(disposicao)?.[1] ?? "relatorio";
+  const url = URL.createObjectURL(await resposta.blob());
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = nome;
+  link.click();
+  URL.revokeObjectURL(url);
 }

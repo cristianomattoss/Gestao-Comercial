@@ -11,7 +11,9 @@ import relatoriosRoutes from "./routes/relatorios.js";
 
 export const app = express();
 
-app.use(cors({ origin: config.corsOrigin }));
+app.use(
+  cors({ origin: config.corsOrigin, exposedHeaders: ["Content-Disposition"] }),
+);
 app.use(express.json());
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
