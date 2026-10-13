@@ -1,35 +1,40 @@
 import "./Dashboard.css";
-import {
-  getFiliais,
-  getVendasPorFilialEMes,
-  getProdutosMaisVendidos,
-  getEstoqueBaixo,
-} from "../services/pdvService";
+import { useEffect, useState } from "react";
+
 import Sidebar from "../components/Sidebar";
+import { carregarDashboardGestor } from "../controllers/vendaController";
 import { meses } from "../data/pdvData";
 
+function formatarMoeda(valor) {
+  return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+}
+
 function Dashboard({ usuario, onNavigate, onLogout }) {
-  const filial = getFiliais().find((filial) => filial.nome === usuario?.filial);
+  const [mesSelecionado, setMesSelecionado] = useState("2026-09");
+  const [dados, setDados] = useState(null);
+  const [erro, setErro] = useState("");
 
-  const vendas = getVendasPorFilialEMes(filial?.id, "2026-09");
+  useEffect(() => {
+    let ativo = true;
 
-  const faturamento = vendas.reduce(
-    (total, venda) => total + venda.valorTotal,
-    0,
-  );
+    carregarDashboardGestor(mesSelecionado)
+      .then((resultado) => {
+        if (!ativo) return;
 
-  const quantidadeVendas = vendas.length;
+        setDados(resultado);
+        setErro("");
+      })
+      .catch((e) => {
+        if (ativo) setErro(e.message);
+      });
 
-  const produtosVendidos = vendas.reduce(
-    (total, venda) => total + venda.quantidade,
-    0,
-  );
+    return () => {
+      ativo = false;
+    };
+  }, [mesSelecionado]);
 
-  const ticketMedio = quantidadeVendas > 0 ? faturamento / quantidadeVendas : 0;
-
-  const produtosMaisVendidos = getProdutosMaisVendidos(filial?.id, "2026-09");
-
-  const estoqueBaixo = getEstoqueBaixo(filial?.id);
+  const indicadores = dados?.indicadores;
+  const nomeMes = meses.find((mes) => mes.valor === mesSelecionado)?.nome;
 
   return (
     <main className="dashboard-page">
@@ -62,8 +67,8 @@ function Dashboard({ usuario, onNavigate, onLogout }) {
           <div className="filter-group">
             <label>Filial</label>
 
-            <select>
-              <option>Filial Centro</option>
+            <select value={usuario?.filial || ""} disabled>
+              <option value={usuario?.filial}>{usuario?.filial}</option>
             </select>
           </div>
 
@@ -83,38 +88,30 @@ function Dashboard({ usuario, onNavigate, onLogout }) {
           </div>
         </div>
 
+        {erro && <p className="login-error">{erro}</p>}
+
         <section className="kpi-grid">
           <div className="kpi-card">
             <span className="kpi-title">Faturamento</span>
-            <strong>
-              R${" "}
-              {faturamento.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </strong>
-            <small>Setembro de 2026</small>
+            <strong>R$ {formatarMoeda(indicadores?.faturamento ?? 0)}</strong>
+            <small>{nomeMes}</small>
           </div>
 
           <div className="kpi-card">
             <span className="kpi-title">Vendas</span>
-            <strong>{quantidadeVendas}</strong>
+            <strong>{indicadores?.totalVendas ?? 0}</strong>
             <small>vendas realizadas</small>
           </div>
 
           <div className="kpi-card">
             <span className="kpi-title">Ticket médio</span>
-            <strong>
-              R${" "}
-              {ticketMedio.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </strong>
+            <strong>R$ {formatarMoeda(indicadores?.ticketMedio ?? 0)}</strong>
             <small>por venda</small>
           </div>
 
           <div className="kpi-card">
             <span className="kpi-title">Produtos vendidos</span>
-            <strong>{produtosVendidos}</strong>
+            <strong>{indicadores?.produtosVendidos ?? 0}</strong>
             <small>unidades</small>
           </div>
         </section>
@@ -138,9 +135,9 @@ function Dashboard({ usuario, onNavigate, onLogout }) {
               </thead>
 
               <tbody>
-                {produtosMaisVendidos.map((produto) => (
-                  <tr key={produto.nome}>
-                    <td>{produto.nome}</td>
+                {(dados?.maisVendidos ?? []).map((produto) => (
+                  <tr key={produto.produtoId}>
+                    <td>{produto.produto}</td>
                     <td>{produto.categoria}</td>
                     <td>{produto.quantidade}</td>
                   </tr>
@@ -167,13 +164,13 @@ function Dashboard({ usuario, onNavigate, onLogout }) {
               </thead>
 
               <tbody>
-                {estoqueBaixo.map((produto) => (
-                  <tr key={produto.nome}>
-                    <td>{produto.nome}</td>
+                {(dados?.estoqueBaixo ?? []).map((item) => (
+                  <tr key={item.produtoId}>
+                    <td>{item.produto}</td>
 
-                    <td className="stock-low">{produto.quantidade}</td>
+                    <td className="stock-low">{item.quantidade}</td>
 
-                    <td>{produto.estoqueMinimo}</td>
+                    <td>{item.estoqueMinimo}</td>
                   </tr>
                 ))}
               </tbody>

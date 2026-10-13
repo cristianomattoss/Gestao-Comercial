@@ -1,42 +1,66 @@
 import "./Dashboard.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Sidebar from "../components/Sidebar";
-import { getFiliais, getVendas } from "../services/pdvService";
+import { carregarFiliais } from "../controllers/filialController";
+import { compararFiliais } from "../controllers/vendaController";
 import { meses } from "../data/pdvData";
 
+function formatarMoeda(valor) {
+  return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+}
+
 function Comparativo({ usuario, onLogout }) {
-  const filiais = getFiliais();
-  const vendas = getVendas();
-
+  const [filiais, setFiliais] = useState([]);
+  const [selecionadas, setSelecionadas] = useState([]);
   const [mesSelecionado, setMesSelecionado] = useState("2026-09");
+  const [ordenarPor, setOrdenarPor] = useState("faturamento");
+  const [dadosFiliais, setDadosFiliais] = useState([]);
+  const [erro, setErro] = useState("");
 
-  const dadosFiliais = filiais.map((filial) => {
-    const vendasFilial = vendas.filter(
-      (venda) => venda.filialId === filial.id && venda.mes === mesSelecionado,
-    );
+  useEffect(() => {
+    carregarFiliais()
+      .then((lista) => {
+        setFiliais(lista);
+        setSelecionadas(lista.map((filial) => filial.id));
+      })
+      .catch((e) => setErro(e.message));
+  }, []);
 
-    const faturamento = vendasFilial.reduce(
-      (total, venda) => total + venda.valorTotal,
-      0,
-    );
+  useEffect(() => {
+    if (filiais.length === 0) return;
 
-    const quantidadeVendas = vendasFilial.length;
+    let ativo = true;
 
-    const ticketMedio =
-      quantidadeVendas > 0 ? faturamento / quantidadeVendas : 0;
+    compararFiliais({ mes: mesSelecionado, filialIds: selecionadas, ordenarPor })
+      .then((resultado) => {
+        if (!ativo) return;
 
-    return {
-      ...filial,
-      faturamento,
-      quantidadeVendas,
-      ticketMedio,
+        setDadosFiliais(resultado.filiais);
+        setErro("");
+      })
+      .catch((e) => {
+        if (!ativo) return;
+
+        setDadosFiliais([]);
+        setErro(e.message);
+      });
+
+    return () => {
+      ativo = false;
     };
-  });
+  }, [filiais, selecionadas, mesSelecionado, ordenarPor]);
 
-  const melhorFilial = [...dadosFiliais].sort(
-    (a, b) => b.faturamento - a.faturamento,
-  )[0];
+  function alternarFilial(id) {
+    setSelecionadas((atuais) =>
+      atuais.includes(id) ? atuais.filter((item) => item !== id) : [...atuais, id],
+    );
+  }
+
+  const melhorFilial = dadosFiliais[0];
+  const cidades = Object.fromEntries(
+    filiais.map((filial) => [filial.id, filial.cidade]),
+  );
 
   return (
     <main className="dashboard-page">
@@ -70,31 +94,64 @@ function Comparativo({ usuario, onLogout }) {
               value={mesSelecionado}
               onChange={(event) => setMesSelecionado(event.target.value)}
             >
-              <option value="2026-09">Setembro de 2026</option>
+              {meses.map((mes) => (
+                <option key={mes.valor} value={mes.valor}>
+                  {mes.nome}
+                </option>
+              ))}
             </select>
           </div>
+
+          <div className="filter-group">
+            <label>Ordenar por</label>
+
+            <select
+              value={ordenarPor}
+              onChange={(event) => setOrdenarPor(event.target.value)}
+            >
+              <option value="faturamento">Faturamento</option>
+              <option value="ticketMedio">Ticket médio</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Filiais (mínimo 2)</label>
+
+            {filiais.map((filial) => (
+              <label key={filial.id}>
+                <input
+                  type="checkbox"
+                  checked={selecionadas.includes(filial.id)}
+                  onChange={() => alternarFilial(filial.id)}
+                />{" "}
+                {filial.nome}
+              </label>
+            ))}
+          </div>
         </div>
+
+        {erro && <p className="login-error">{erro}</p>}
 
         <section className="kpi-grid">
           <div className="kpi-card">
             <span className="kpi-title">Melhor desempenho</span>
 
-            <strong>{melhorFilial?.nome || "-"}</strong>
+            <strong>{melhorFilial?.filial || "-"}</strong>
 
-            <small>maior faturamento no período</small>
+            <small>
+              maior {ordenarPor === "ticketMedio" ? "ticket médio" : "faturamento"}{" "}
+              no período
+            </small>
           </div>
 
           <div className="kpi-card">
-            <span className="kpi-title">Maior faturamento</span>
+            <span className="kpi-title">
+              {ordenarPor === "ticketMedio" ? "Maior ticket médio" : "Maior faturamento"}
+            </span>
 
-            <strong>
-              R${" "}
-              {(melhorFilial?.faturamento || 0).toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </strong>
+            <strong>R$ {formatarMoeda(melhorFilial?.[ordenarPor] || 0)}</strong>
 
-            <small>{melhorFilial?.nome || "-"}</small>
+            <small>{melhorFilial?.filial || "-"}</small>
           </div>
         </section>
 
@@ -120,28 +177,18 @@ function Comparativo({ usuario, onLogout }) {
 
             <tbody>
               {dadosFiliais.map((filial) => (
-                <tr key={filial.id}>
+                <tr key={filial.filialId}>
                   <td>
-                    <strong>{filial.nome}</strong>
+                    <strong>{filial.filial}</strong>
                   </td>
 
-                  <td>{filial.cidade}</td>
+                  <td>{cidades[filial.filialId]}</td>
 
-                  <td>{filial.quantidadeVendas}</td>
+                  <td>{filial.totalVendas}</td>
 
-                  <td>
-                    R${" "}
-                    {filial.faturamento.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                    })}
-                  </td>
+                  <td>R$ {formatarMoeda(filial.faturamento)}</td>
 
-                  <td>
-                    R${" "}
-                    {filial.ticketMedio.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                    })}
-                  </td>
+                  <td>R$ {formatarMoeda(filial.ticketMedio)}</td>
                 </tr>
               ))}
             </tbody>

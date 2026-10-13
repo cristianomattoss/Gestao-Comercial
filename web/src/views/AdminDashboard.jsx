@@ -1,55 +1,40 @@
 import "./Dashboard.css";
+import { useEffect, useState } from "react";
+
 import Sidebar from "../components/Sidebar";
-
-import {
-  getFiliais,
-  getVendas,
-  getEstoque,
-  getProdutos,
-} from "../services/pdvService";
-
+import { carregarDashboardAdmin } from "../controllers/vendaController";
 import { meses } from "../data/pdvData";
 
+function formatarMoeda(valor) {
+  return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+}
+
 function AdminDashboard({ usuario, onNavigate, onLogout }) {
-  const filiais = getFiliais();
-  const vendas = getVendas();
-  const estoque = getEstoque();
-  const produtos = getProdutos();
+  const [mesSelecionado, setMesSelecionado] = useState("2026-09");
+  const [dados, setDados] = useState(null);
+  const [erro, setErro] = useState("");
 
-  const mesSelecionado = "2026-09";
+  useEffect(() => {
+    let ativo = true;
 
-  const vendasDoMes = vendas.filter((venda) => venda.mes === mesSelecionado);
+    carregarDashboardAdmin(mesSelecionado)
+      .then((resultado) => {
+        if (!ativo) return;
 
-  const faturamento = vendasDoMes.reduce(
-    (total, venda) => total + venda.valorTotal,
-    0,
-  );
+        setDados(resultado);
+        setErro("");
+      })
+      .catch((e) => {
+        if (ativo) setErro(e.message);
+      });
 
-  const unidadesVendidas = vendasDoMes.reduce(
-    (total, venda) => total + venda.quantidade,
-    0,
-  );
-
-  const estoqueBaixo = estoque.filter(
-    (item) => item.quantidade <= item.estoqueMinimo,
-  );
-
-  const desempenhoFiliais = filiais.map((filial) => {
-    const vendasFilial = vendasDoMes.filter(
-      (venda) => venda.filialId === filial.id,
-    );
-
-    const faturamentoFilial = vendasFilial.reduce(
-      (total, venda) => total + venda.valorTotal,
-      0,
-    );
-
-    return {
-      ...filial,
-      vendas: vendasFilial.length,
-      faturamento: faturamentoFilial,
+    return () => {
+      ativo = false;
     };
-  });
+  }, [mesSelecionado]);
+
+  const indicadores = dados?.indicadores;
+  const filiais = dados?.filiais ?? [];
 
   return (
     <main className="dashboard-page">
@@ -97,16 +82,13 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           </div>
         </div>
 
+        {erro && <p className="login-error">{erro}</p>}
+
         <section className="kpi-grid">
           <div className="kpi-card">
             <span className="kpi-title">Faturamento</span>
 
-            <strong>
-              R${" "}
-              {faturamento.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </strong>
+            <strong>R$ {formatarMoeda(indicadores?.faturamento ?? 0)}</strong>
 
             <small>Todas as filiais</small>
           </div>
@@ -114,7 +96,7 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Vendas</span>
 
-            <strong>{vendasDoMes.length}</strong>
+            <strong>{indicadores?.totalVendas ?? 0}</strong>
 
             <small>vendas realizadas</small>
           </div>
@@ -130,7 +112,7 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Produtos vendidos</span>
 
-            <strong>{unidadesVendidas}</strong>
+            <strong>{indicadores?.produtosVendidos ?? 0}</strong>
 
             <small>unidades</small>
           </div>
@@ -142,7 +124,7 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
               <div>
                 <h2>Desempenho das filiais</h2>
 
-                <p>Faturamento no mês selecionado</p>
+                <p>Faturamento e participação no mês selecionado</p>
               </div>
             </div>
 
@@ -152,21 +134,25 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
                   <th>Filial</th>
                   <th>Vendas</th>
                   <th>Faturamento</th>
+                  <th>Participação</th>
                 </tr>
               </thead>
 
               <tbody>
-                {desempenhoFiliais.map((filial) => (
-                  <tr key={filial.id}>
-                    <td>{filial.nome}</td>
+                {filiais.map((filial) => (
+                  <tr key={filial.filialId}>
+                    <td>{filial.filial}</td>
 
-                    <td>{filial.vendas}</td>
+                    <td>{filial.totalVendas}</td>
+
+                    <td>R$ {formatarMoeda(filial.faturamento)}</td>
 
                     <td>
-                      R${" "}
-                      {filial.faturamento.toLocaleString("pt-BR", {
-                        minimumFractionDigits: 2,
+                      {(filial.participacao * 100).toLocaleString("pt-BR", {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
                       })}
+                      %
                     </td>
                   </tr>
                 ))}
@@ -193,25 +179,15 @@ function AdminDashboard({ usuario, onNavigate, onLogout }) {
               </thead>
 
               <tbody>
-                {estoqueBaixo.map((item) => {
-                  const produto = produtos.find(
-                    (produto) => produto.id === item.produtoId,
-                  );
+                {(dados?.estoqueBaixo ?? []).map((item) => (
+                  <tr key={`${item.filialId}-${item.produtoId}`}>
+                    <td>{item.produto}</td>
 
-                  const filial = filiais.find(
-                    (filial) => filial.id === item.filialId,
-                  );
+                    <td>{item.filial}</td>
 
-                  return (
-                    <tr key={`${item.filialId}-${item.produtoId}`}>
-                      <td>{produto?.nome}</td>
-
-                      <td>{filial?.nome}</td>
-
-                      <td className="stock-low">{item.quantidade}</td>
-                    </tr>
-                  );
-                })}
+                    <td className="stock-low">{item.quantidade}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
