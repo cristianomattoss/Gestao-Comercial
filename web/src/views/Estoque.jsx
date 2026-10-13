@@ -1,41 +1,76 @@
 import "./Dashboard.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ESTADOS } from "../models/AppState";
 
+import { carregarFiliais } from "../controllers/filialController";
 import {
-  getFiliais,
-  getEstoque,
-  getProdutos,
-  getCategorias,
-} from "../services/pdvService";
+  carregarCategorias,
+  carregarEstoque,
+} from "../controllers/estoqueController";
 import Sidebar from "../components/Sidebar";
 
 function Estoque({ usuario, onLogout }) {
-  const filiais = getFiliais();
-  const estoque = getEstoque();
-  const produtos = getProdutos();
-  const categorias = getCategorias();
+  const ehAdmin = usuario?.perfil === ESTADOS.ADMIN;
+
+  const [filiais, setFiliais] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [itens, setItens] = useState([]);
+  const [resumo, setResumo] = useState(null);
+  const [erro, setErro] = useState("");
 
   const [filialSelecionada, setFilialSelecionada] = useState(
-    usuario?.perfil === ESTADOS.ADMIN ? "todas" : usuario?.filial || "",
+    ehAdmin ? "todas" : usuario?.filial || "",
   );
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState("");
+  const [situacaoSelecionada, setSituacaoSelecionada] = useState("");
 
-  const filial = filiais.find((filial) => filial.nome === usuario?.filial);
-
-  const estoqueFilial = estoque.filter((item) => {
-    if (usuario?.perfil === ESTADOS.ADMIN) {
-      return (
-        filialSelecionada === "todas" ||
-        item.filialId === Number(filialSelecionada)
-      );
+  useEffect(() => {
+    if (ehAdmin) {
+      carregarFiliais()
+        .then(setFiliais)
+        .catch((e) => setErro(e.message));
     }
 
-    return item.filialId === filial?.id;
-  });
+    carregarCategorias()
+      .then(setCategorias)
+      .catch((e) => setErro(e.message));
+  }, [ehAdmin]);
+
+  useEffect(() => {
+    let ativo = true;
+
+    carregarEstoque({
+      filialId:
+        ehAdmin && filialSelecionada !== "todas"
+          ? filialSelecionada
+          : undefined,
+      categoriaId: categoriaSelecionada,
+      situacao: situacaoSelecionada,
+    })
+      .then((dados) => {
+        if (!ativo) return;
+
+        setItens(dados.itens);
+        setResumo(dados.resumo);
+        setErro("");
+      })
+      .catch((e) => {
+        if (ativo) setErro(e.message);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [ehAdmin, filialSelecionada, categoriaSelecionada, situacaoSelecionada]);
+
+  const totalProdutos = resumo
+    ? Object.values(resumo).reduce((soma, quantidade) => soma + quantidade, 0)
+    : 0;
+  const precisamAtencao = resumo ? resumo.BAIXO + resumo.SEM_ESTOQUE : 0;
 
   return (
     <main className="dashboard-page">
-      <Sidebar onLogout={onLogout} admin={usuario?.perfil === ESTADOS.ADMIN} />
+      <Sidebar onLogout={onLogout} admin={ehAdmin} />
 
       <section className="dashboard-content">
         <header className="dashboard-header">
@@ -51,9 +86,7 @@ function Estoque({ usuario, onLogout }) {
             </div>
 
             <div>
-              <strong>
-                {usuario?.perfil === ESTADOS.ADMIN ? "Administrador" : "Gestor"}
-              </strong>
+              <strong>{ehAdmin ? "Administrador" : "Gestor"}</strong>
               <span>{usuario?.email}</span>
             </div>
           </div>
@@ -63,7 +96,7 @@ function Estoque({ usuario, onLogout }) {
           <div className="filter-group">
             <label>Filial</label>
 
-            {usuario?.perfil === ESTADOS.ADMIN ? (
+            {ehAdmin ? (
               <select
                 value={filialSelecionada}
                 onChange={(event) => setFilialSelecionada(event.target.value)}
@@ -82,13 +115,47 @@ function Estoque({ usuario, onLogout }) {
               </select>
             )}
           </div>
+
+          <div className="filter-group">
+            <label>Categoria</label>
+
+            <select
+              value={categoriaSelecionada}
+              onChange={(event) => setCategoriaSelecionada(event.target.value)}
+            >
+              <option value="">Todas as categorias</option>
+
+              {categorias.map((categoria) => (
+                <option key={categoria.id} value={categoria.id}>
+                  {categoria.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Situação</label>
+
+            <select
+              value={situacaoSelecionada}
+              onChange={(event) => setSituacaoSelecionada(event.target.value)}
+            >
+              <option value="">Todas as situações</option>
+              <option value="NORMAL">Normal</option>
+              <option value="ATENCAO">Atenção</option>
+              <option value="BAIXO">Baixo</option>
+              <option value="SEM_ESTOQUE">Sem estoque</option>
+            </select>
+          </div>
         </div>
+
+        {erro && <p className="login-error">{erro}</p>}
 
         <section className="kpi-grid">
           <div className="kpi-card">
             <span className="kpi-title">Produtos</span>
 
-            <strong>{estoqueFilial.length}</strong>
+            <strong>{totalProdutos}</strong>
 
             <small>produtos em estoque</small>
           </div>
@@ -96,15 +163,9 @@ function Estoque({ usuario, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Estoque baixo</span>
 
-            <strong>
-              {
-                estoqueFilial.filter(
-                  (item) => item.quantidade <= item.estoqueMinimo,
-                ).length
-              }
-            </strong>
+            <strong>{precisamAtencao}</strong>
 
-            <small>produtos precisam de atenção</small>
+            <small>produtos precisam de reposição</small>
           </div>
         </section>
 
@@ -129,31 +190,23 @@ function Estoque({ usuario, onLogout }) {
             </thead>
 
             <tbody>
-              {estoqueFilial.map((item) => {
-                const produto = produtos.find(
-                  (produto) => produto.id === item.produtoId,
-                );
-
-                const categoria = categorias.find(
-                  (categoria) => categoria.id === produto?.categoriaId,
-                );
-
-                const estoqueBaixo = item.quantidade <= item.estoqueMinimo;
+              {itens.map((item) => {
+                const exigeReposicao = item.situacao?.exigeReposicao;
 
                 return (
                   <tr key={`${item.filialId}-${item.produtoId}`}>
-                    <td>{produto?.nome}</td>
+                    <td>{item.produto}</td>
 
-                    <td>{categoria?.nome}</td>
+                    <td>{item.categoria}</td>
 
-                    <td className={estoqueBaixo ? "stock-low" : ""}>
+                    <td className={exigeReposicao ? "stock-low" : ""}>
                       {item.quantidade}
                     </td>
 
-                    <td>{item.estoqueMinimo}</td>
+                    <td>{item.estoqueMinimo ?? "—"}</td>
 
-                    <td className={estoqueBaixo ? "stock-low" : ""}>
-                      {estoqueBaixo ? "Estoque baixo" : "Normal"}
+                    <td className={exigeReposicao ? "stock-low" : ""}>
+                      {item.situacao?.descricao ?? "Sem classificação"}
                     </td>
                   </tr>
                 );

@@ -1,53 +1,64 @@
 import "./Dashboard.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import {
-  getFiliais,
-  getProdutos,
-  getCategorias,
-  getVendas,
-} from "../services/pdvService";
+import { carregarFiliais } from "../controllers/filialController";
+import { carregarVendas } from "../controllers/vendaController";
 
 import { ESTADOS } from "../models/AppState";
 import Sidebar from "../components/Sidebar";
 import { meses } from "../data/pdvData";
 
+function formatarMoeda(valor) {
+  return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+}
+
 function Vendas({ usuario, onLogout }) {
-  const filiais = getFiliais();
-  const produtos = getProdutos();
-  const categorias = getCategorias();
-  const vendas = getVendas();
+  const ehAdmin = usuario?.perfil === ESTADOS.ADMIN;
+
+  const [filiais, setFiliais] = useState([]);
+  const [vendas, setVendas] = useState([]);
+  const [indicadores, setIndicadores] = useState(null);
+  const [erro, setErro] = useState("");
 
   const [filialSelecionada, setFilialSelecionada] = useState(
-    usuario?.perfil === ESTADOS.ADMIN ? "todas" : usuario?.filial || "",
+    ehAdmin ? "todas" : usuario?.filial || "",
   );
 
   const [mesSelecionado, setMesSelecionado] = useState("2026-09");
 
-  const vendasFiltradas = vendas.filter((venda) => {
-    const mesmaData = venda.mes === mesSelecionado;
+  useEffect(() => {
+    if (!ehAdmin) return;
 
-    if (usuario?.perfil === ESTADOS.ADMIN) {
-      const mesmaFilial =
-        filialSelecionada === "todas" ||
-        venda.filialId === Number(filialSelecionada);
+    carregarFiliais()
+      .then(setFiliais)
+      .catch((e) => setErro(e.message));
+  }, [ehAdmin]);
 
-      return mesmaData && mesmaFilial;
-    }
+  useEffect(() => {
+    let ativo = true;
+    const filialId =
+      ehAdmin && filialSelecionada !== "todas" ? filialSelecionada : undefined;
 
-    const filial = filiais.find((filial) => filial.nome === usuario?.filial);
+    carregarVendas({ mes: mesSelecionado, filialId })
+      .then((dados) => {
+        if (!ativo) return;
 
-    return mesmaData && venda.filialId === filial?.id;
-  });
+        setVendas(dados.vendas);
+        setIndicadores(dados.indicadores);
+        setErro("");
+      })
+      .catch((e) => {
+        if (ativo) setErro(e.message);
+      });
 
-  const faturamento = vendasFiltradas.reduce(
-    (total, venda) => total + venda.valorTotal,
-    0,
-  );
+    return () => {
+      ativo = false;
+    };
+  }, [ehAdmin, filialSelecionada, mesSelecionado]);
 
   return (
     <main className="dashboard-page">
-      <Sidebar onLogout={onLogout} admin={usuario?.perfil === ESTADOS.ADMIN} />
+      <Sidebar onLogout={onLogout} admin={ehAdmin} />
 
       <section className="dashboard-content">
         <header className="dashboard-header">
@@ -62,9 +73,7 @@ function Vendas({ usuario, onLogout }) {
             </div>
 
             <div>
-              <strong>
-                {usuario?.perfil === ESTADOS.ADMIN ? "Administrador" : "Gestor"}
-              </strong>
+              <strong>{ehAdmin ? "Administrador" : "Gestor"}</strong>
 
               <span>{usuario?.email}</span>
             </div>
@@ -75,7 +84,7 @@ function Vendas({ usuario, onLogout }) {
           <div className="filter-group">
             <label>Filial</label>
 
-            {usuario?.perfil === ESTADOS.ADMIN ? (
+            {ehAdmin ? (
               <select
                 value={filialSelecionada}
                 onChange={(event) => setFilialSelecionada(event.target.value)}
@@ -111,11 +120,13 @@ function Vendas({ usuario, onLogout }) {
           </div>
         </div>
 
+        {erro && <p className="login-error">{erro}</p>}
+
         <section className="kpi-grid">
           <div className="kpi-card">
             <span className="kpi-title">Total de vendas</span>
 
-            <strong>{vendasFiltradas.length}</strong>
+            <strong>{indicadores?.totalVendas ?? 0}</strong>
 
             <small>vendas no período</small>
           </div>
@@ -123,14 +134,17 @@ function Vendas({ usuario, onLogout }) {
           <div className="kpi-card">
             <span className="kpi-title">Faturamento</span>
 
-            <strong>
-              R${" "}
-              {faturamento.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </strong>
+            <strong>R$ {formatarMoeda(indicadores?.faturamento ?? 0)}</strong>
 
             <small>no período</small>
+          </div>
+
+          <div className="kpi-card">
+            <span className="kpi-title">Ticket médio</span>
+
+            <strong>R$ {formatarMoeda(indicadores?.ticketMedio ?? 0)}</strong>
+
+            <small>por venda</small>
           </div>
         </section>
 
@@ -154,32 +168,17 @@ function Vendas({ usuario, onLogout }) {
             </thead>
 
             <tbody>
-              {vendasFiltradas.map((venda) => {
-                const produto = produtos.find(
-                  (produto) => produto.id === venda.produtoId,
-                );
+              {vendas.map((venda) => (
+                <tr key={venda.id}>
+                  <td>{venda.produto}</td>
 
-                const categoria = categorias.find(
-                  (categoria) => categoria.id === produto?.categoriaId,
-                );
+                  <td>{venda.categoria}</td>
 
-                return (
-                  <tr key={venda.id}>
-                    <td>{produto?.nome}</td>
+                  <td>{venda.quantidade}</td>
 
-                    <td>{categoria?.nome}</td>
-
-                    <td>{venda.quantidade}</td>
-
-                    <td>
-                      R${" "}
-                      {venda.valorTotal.toLocaleString("pt-BR", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </td>
-                  </tr>
-                );
-              })}
+                  <td>R$ {formatarMoeda(venda.valorTotal)}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
