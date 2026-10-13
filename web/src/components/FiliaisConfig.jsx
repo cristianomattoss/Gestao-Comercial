@@ -6,17 +6,28 @@ function FiliaisConfig({ filiais, setFiliais }) {
   const [nomeFilial, setNomeFilial] = useState("");
   const [cidade, setCidade] = useState("");
   const [gestor, setGestor] = useState("");
+  const [erro, setErro] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
-  function cadastrarFilial() {
-    const filiaisAtualizadas = criarFilial(filiais, nomeFilial, cidade, gestor);
+  async function cadastrarFilial() {
+    setErro("");
+    setSalvando(true);
 
-    setFiliais(filiaisAtualizadas);
+    try {
+      const novaFilial = await criarFilial(nomeFilial, cidade, gestor);
 
-    setNomeFilial("");
-    setCidade("");
-    setGestor("");
+      setFiliais([...filiais, novaFilial]);
 
-    setMostrarFormulario(false);
+      setNomeFilial("");
+      setCidade("");
+      setGestor("");
+
+      setMostrarFormulario(false);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -70,6 +81,8 @@ function FiliaisConfig({ filiais, setFiliais }) {
               </div>
             </div>
 
+            {erro && <p className="login-error">{erro}</p>}
+
             <div className="form-actions">
               <button
                 className="secondary-button"
@@ -78,8 +91,12 @@ function FiliaisConfig({ filiais, setFiliais }) {
                 Cancelar
               </button>
 
-              <button className="primary-button" onClick={cadastrarFilial}>
-                Cadastrar filial
+              <button
+                className="primary-button"
+                onClick={cadastrarFilial}
+                disabled={salvando}
+              >
+                {salvando ? "Salvando..." : "Cadastrar filial"}
               </button>
             </div>
           </div>

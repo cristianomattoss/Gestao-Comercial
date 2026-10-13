@@ -1,7 +1,13 @@
-import { Filial } from "../models/Filial";
+import { cadastrarFilial, listarFiliais } from "../services/filialService";
 
-export function criarFilial(filiais, nome, cidade, gerente) {
-  const novaFilial = new Filial(filiais.length + 1, nome, cidade, gerente);
+export async function carregarFiliais() {
+  return listarFiliais();
+}
 
-  return [...filiais, novaFilial];
+export async function criarFilial(nome, cidade, gerente) {
+  return cadastrarFilial({
+    nome: nome.trim(),
+    cidade: cidade.trim(),
+    gerente: gerente.trim(),
+  });
 }

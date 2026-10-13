@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Store } from "lucide-react";
 
@@ -12,7 +12,11 @@ import Filiais from "./views/Filiais";
 import Comparativo from "./views/Comparativo";
 import Relatorios from "./views/Relatorios";
 
-import { autenticarUsuario } from "./controllers/authController";
+import {
+  autenticarUsuario,
+  encerrarSessao,
+  recuperarSessao,
+} from "./controllers/authController";
 import { usuariosIniciais } from "./data/usuariosData";
 import { ESTADOS } from "./models/AppState";
 
@@ -23,26 +27,49 @@ function App() {
   const [usuarioLogado, setUsuarioLogado] = useState(null);
   const [usuarios, setUsuarios] = useState(usuariosIniciais);
 
-  function handleLogin(event) {
+  const [carregando, setCarregando] = useState(true);
+  const [entrando, setEntrando] = useState(false);
+
+  useEffect(() => {
+    let ativo = true;
+
+    recuperarSessao().then((usuario) => {
+      if (!ativo) return;
+
+      setUsuarioLogado(usuario);
+      setCarregando(false);
+    });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  async function handleLogin(event) {
     event.preventDefault();
 
     setErro("");
+    setEntrando(true);
 
-    const usuarioEncontrado = autenticarUsuario(usuarios, email, senha);
+    const resultado = await autenticarUsuario(email, senha);
 
-    if (!usuarioEncontrado) {
-      setErro("E-mail ou senha inválidos.");
+    setEntrando(false);
+
+    if (resultado.erro) {
+      setErro(resultado.erro);
       return;
     }
 
-    console.log("Login realizado:", usuarioEncontrado);
-
-    setUsuarioLogado(usuarioEncontrado);
+    setSenha("");
+    setUsuarioLogado(resultado.usuario);
   }
 
   function handleLogout() {
+    encerrarSessao();
     setUsuarioLogado(null);
   }
+
+  if (carregando) return null;
 
   return (
     <BrowserRouter>
@@ -134,7 +161,9 @@ function App() {
 
                         {erro && <p className="login-error">{erro}</p>}
 
-                        <button type="submit">Entrar →</button>
+                        <button type="submit" disabled={entrando}>
+                          {entrando ? "Entrando..." : "Entrar →"}
+                        </button>
                       </form>
 
                       <div className="security-message">

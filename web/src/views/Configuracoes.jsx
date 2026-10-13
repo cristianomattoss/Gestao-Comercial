@@ -1,7 +1,7 @@
 import "./Dashboard.css";
 
-import { useState } from "react";
-import { getFiliais } from "../services/pdvService";
+import { useEffect, useState } from "react";
+import { carregarFiliais } from "../controllers/filialController";
 
 import FiliaisConfig from "../components/FiliaisConfig";
 import UsuariosConfig from "../components/UsuariosConfig";
@@ -14,7 +14,11 @@ function Configuracoes({
   setUsuarios,
   onLogout,
 }) {
-  const [filiais, setFiliais] = useState(getFiliais());
+  const [filiais, setFiliais] = useState([]);
+
+  useEffect(() => {
+    carregarFiliais().then(setFiliais).catch(() => setFiliais([]));
+  }, []);
   const [abaAtiva, setAbaAtiva] = useState("filiais");
 
   return (

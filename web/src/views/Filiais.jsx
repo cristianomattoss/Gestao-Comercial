@@ -2,11 +2,15 @@ import "./Dashboard.css";
 
 import Sidebar from "../components/Sidebar";
 import FiliaisConfig from "../components/FiliaisConfig";
-import { getFiliais } from "../services/pdvService";
-import { useState } from "react";
+import { carregarFiliais } from "../controllers/filialController";
+import { useEffect, useState } from "react";
 
 function Filiais({ usuario, onLogout }) {
-  const [filiais, setFiliais] = useState(getFiliais());
+  const [filiais, setFiliais] = useState([]);
+
+  useEffect(() => {
+    carregarFiliais().then(setFiliais).catch(() => setFiliais([]));
+  }, []);
 
   return (
     <main className="dashboard-page">
