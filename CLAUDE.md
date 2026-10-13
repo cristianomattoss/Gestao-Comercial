@@ -30,7 +30,7 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
 - Usuários de seed: `admin@empresa.com`, `gestor1@empresa.com`, `gestor2@empresa.com` (senha `123456`).
 
 ## Estado atual (diverge do PDF em alguns pontos)
-- O **frontend ainda usa mocks** (`web/src/data`, `web/src/services/pdvService.js`) e faz login local. Próximo passo: integrar o `web` à API.
+- O **frontend já consome a API** em login (JWT em `localStorage`), filiais, vendas, estoque, dashboards e comparativo (`web/src/services/*Service.js` → `controllers/`). Só a tela de Relatórios e a aba de usuários em Configurações ainda usam mocks (`web/src/data`, `services/pdvService.js`).
 - A API (`api/src`, camadas `routes → controllers → models`) expõe, todos com `Authorization: Bearer <token>`:
   - `POST /auth/login`, `GET /auth/me`
   - `GET /filiais`, `GET /filiais/:id` (gestor só a própria); `POST /filiais`, `PUT /filiais/:id` (ADMIN)
