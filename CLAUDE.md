@@ -38,8 +38,9 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
   - `GET /vendas/comparativo?mes&filialIds=1,2[&ordenarPor=faturamento|ticketMedio]` e `/vendas/participacao-filiais?mes` (ADMIN)
   - `GET /estoque[?filialId&categoriaId&situacao=NORMAL|ATENCAO|BAIXO|SEM_ESTOQUE]` (itens com State, resumo e alertas)
   - `GET /categorias`, `GET /produtos[?categoriaId]`
+  - `POST /relatorios` (RelatorioBuilder: tipo, periodoInicio/Fim AAAA-MM, filialId, categoriaId, produtoId → prévia + registro no histórico), `GET /relatorios/recentes`, `GET /relatorios/:id/exportar?formato=PDF|EXCEL|CSV`
 - O escopo do gestor (RN12) é aplicado em `resolverEscopoFilial` (`api/src/validacao.js`) antes das consultas. Testes: `npm test -w api` (não precisam de banco).
-- Ainda não existem: filtro de vendas por forma de pagamento, cadastro de usuários/empresa, relatórios (Builder/exportação) e usuário inativo.
+- Ainda não existem: filtro de vendas por forma de pagamento, cadastro de usuários/empresa e usuário inativo. A tela de Relatórios do `web` ainda usa mocks (a API de relatórios já existe; migration `002` cria `relatorios_historico`).
 - O seed da API importa `web/src/data/pdvData.js`; ao remover os mocks, copiar os dados para o seed.
 - O PDF prevê que as vendas venham de **bases de PDV externas** (um adaptador por filial, somente leitura) e que o banco do sistema guarde só usuários, filiais, parâmetros e histórico de relatórios. Hoje tudo fica no mesmo Postgres. Não implementar a integração PDV sem alinhar com o usuário.
 
