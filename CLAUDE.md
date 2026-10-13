@@ -30,7 +30,7 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
 - Usuários de seed: `admin@empresa.com`, `gestor1@empresa.com`, `gestor2@empresa.com` (senha `123456`).
 
 ## Estado atual (diverge do PDF em alguns pontos)
-- O **frontend já consome a API** em login (JWT em `localStorage`), filiais, vendas, estoque, dashboards e comparativo (`web/src/services/*Service.js` → `controllers/`). Só a tela de Relatórios e a aba de usuários em Configurações ainda usam mocks (`web/src/data`, `services/pdvService.js`).
+- O **frontend já consome a API** em login (JWT em `localStorage`), filiais, vendas, estoque, dashboards e comparativo (`web/src/services/*Service.js` → `controllers/`). Relatórios (prévia, exportação e recentes) também. Só a aba de usuários em Configurações ainda usa mocks (`web/src/data`).
 - A API (`api/src`, camadas `routes → controllers → models`) expõe, todos com `Authorization: Bearer <token>`:
   - `POST /auth/login`, `GET /auth/me`
   - `GET /filiais`, `GET /filiais/:id` (gestor só a própria); `POST /filiais`, `PUT /filiais/:id` (ADMIN)
@@ -40,7 +40,7 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
   - `GET /categorias`, `GET /produtos[?categoriaId]`
   - `POST /relatorios` (RelatorioBuilder: tipo, periodoInicio/Fim AAAA-MM, filialId, categoriaId, produtoId → prévia + registro no histórico), `GET /relatorios/recentes`, `GET /relatorios/:id/exportar?formato=PDF|EXCEL|CSV`
 - O escopo do gestor (RN12) é aplicado em `resolverEscopoFilial` (`api/src/validacao.js`) antes das consultas. Testes: `npm test -w api` (não precisam de banco).
-- Ainda não existem: filtro de vendas por forma de pagamento, cadastro de usuários/empresa e usuário inativo. A tela de Relatórios do `web` ainda usa mocks (a API de relatórios já existe; migration `002` cria `relatorios_historico`).
+- Ainda não existem: filtro de vendas por forma de pagamento, cadastro de usuários/empresa e usuário inativo. A migration `002` cria `relatorios_historico`.
 - O seed da API importa `web/src/data/pdvData.js`; ao remover os mocks, copiar os dados para o seed.
 - O PDF prevê que as vendas venham de **bases de PDV externas** (um adaptador por filial, somente leitura) e que o banco do sistema guarde só usuários, filiais, parâmetros e histórico de relatórios. Hoje tudo fica no mesmo Postgres. Não implementar a integração PDV sem alinhar com o usuário.
 
