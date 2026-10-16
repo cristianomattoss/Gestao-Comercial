@@ -6,7 +6,7 @@ import { carregarVendas } from "../controllers/vendaController";
 
 import { ESTADOS } from "../models/AppState";
 import Sidebar from "../components/Sidebar";
-import { meses } from "../data/pdvData";
+import { meses } from "../data/meses";
 
 const FORMAS_PAGAMENTO = {
   DINHEIRO: "Dinheiro",

@@ -14,7 +14,7 @@ import {
   nomeDoTipo,
 } from "../controllers/relatorioController";
 import { ESTADOS } from "../models/AppState";
-import { meses } from "../data/pdvData";
+import { meses } from "../data/meses";
 
 const moeda = new Intl.NumberFormat("pt-BR", {
   style: "currency",

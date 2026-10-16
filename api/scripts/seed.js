@@ -1,4 +1,4 @@
-// Carrega no banco os dados de exemplo hoje usados como mock pelo frontend.
+// Carrega no banco os dados de exemplo de dadosExemplo.js.
 import bcrypt from "bcryptjs";
 import { pool } from "../src/db.js";
 import {
@@ -7,9 +7,8 @@ import {
   produtos,
   vendas,
   estoque,
-} from "../../web/src/data/pdvData.js";
+} from "./dadosExemplo.js";
 
-// Não importa web/src/data/usuariosData.js: ele usa imports sem extensão (bundler), que o Node não resolve.
 const usuariosIniciais = [
   { email: "admin@empresa.com", senha: "123456", perfil: "ADMIN", filial: null },
   { email: "gestor1@empresa.com", senha: "123456", perfil: "GESTOR", filial: "Filial Centro" },

@@ -43,7 +43,7 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
   - `POST /relatorios` (RelatorioBuilder: tipo, periodoInicio/Fim AAAA-MM, filialId, categoriaId, produtoId → prévia + registro no histórico), `GET /relatorios/recentes`, `GET /relatorios/:id/exportar?formato=PDF|EXCEL|CSV`
 - O escopo do gestor (RN12) é aplicado em `resolverEscopoFilial` (`api/src/validacao.js`) antes das consultas. Testes: `npm test -w api` (não precisam de banco).
 - Migrations: `002` cria `relatorios_historico`, `003` adiciona `usuarios.ativo`, `004` adiciona `vendas.forma_pagamento` (nula para vendas antigas), `005` cria `empresa` (linha única `id = 1`; o seed não a apaga). O middleware `autenticar` consulta `usuarios.ativo` a cada requisição, então inativar um usuário invalida o token na hora (401).
-- O seed da API importa `web/src/data/pdvData.js`; ao remover os mocks, copiar os dados para o seed.
+- Os dados de exemplo ficam em `api/scripts/dadosExemplo.js` (usado por `db:seed`); o frontend não tem mais mocks, só a lista de meses em `web/src/data/meses.js`.
 - O PDF prevê que as vendas venham de **bases de PDV externas** (um adaptador por filial, somente leitura) e que o banco do sistema guarde só usuários, filiais, parâmetros e histórico de relatórios. Hoje tudo fica no mesmo Postgres. Não implementar a integração PDV sem alinhar com o usuário.
 
 ## Domínio

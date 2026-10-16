@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import Sidebar from "../components/Sidebar";
 import { carregarDashboardGestor } from "../controllers/vendaController";
-import { meses } from "../data/pdvData";
+import { meses } from "../data/meses";
 
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
