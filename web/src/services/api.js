@@ -1,6 +1,9 @@
 const URL_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 const CHAVE_TOKEN = "gestao-comercial:token";
 
+// Disparado quando a API recusa o token (expirado ou usuário inativado) numa sessão em uso.
+export const EVENTO_SESSAO_EXPIRADA = "gestao-comercial:sessao-expirada";
+
 export function obterToken() {
   try {
     return localStorage.getItem(CHAVE_TOKEN);
@@ -36,6 +39,11 @@ async function enviar(caminho, { metodo = "GET", corpo } = {}) {
     });
   } catch {
     throw new Error("Não foi possível conectar ao servidor.");
+  }
+
+  if (resposta.status === 401 && token && caminho !== "/auth/login") {
+    salvarToken(null);
+    window.dispatchEvent(new Event(EVENTO_SESSAO_EXPIRADA));
   }
 
   if (!resposta.ok) {

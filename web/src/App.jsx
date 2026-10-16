@@ -18,6 +18,7 @@ import {
   recuperarSessao,
 } from "./controllers/authController";
 import { ESTADOS } from "./models/AppState";
+import { EVENTO_SESSAO_EXPIRADA } from "./services/api";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -27,6 +28,21 @@ function App() {
 
   const [carregando, setCarregando] = useState(true);
   const [entrando, setEntrando] = useState(false);
+
+  useEffect(() => {
+    function encerrarPorSessaoExpirada() {
+      setUsuarioLogado(null);
+      setErro("Sua sessão expirou ou o acesso foi inativado. Entre novamente.");
+    }
+
+    window.addEventListener(EVENTO_SESSAO_EXPIRADA, encerrarPorSessaoExpirada);
+
+    return () =>
+      window.removeEventListener(
+        EVENTO_SESSAO_EXPIRADA,
+        encerrarPorSessaoExpirada,
+      );
+  }, []);
 
   useEffect(() => {
     let ativo = true;
