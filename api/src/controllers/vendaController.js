@@ -2,6 +2,7 @@ import * as vendaModel from "../models/vendaModel.js";
 import { badRequest } from "../errors.js";
 import {
   lerId,
+  lerFormaPagamentoOpcional,
   lerIdOpcional,
   lerMes,
   resolverEscopoFilial,
@@ -20,7 +21,10 @@ function lerFiltros(req) {
 
 // RF03 / UC04: lista de vendas + indicadores consolidados.
 export async function listar(req, res) {
-  const filtros = lerFiltros(req);
+  const filtros = {
+    ...lerFiltros(req),
+    formaPagamento: lerFormaPagamentoOpcional(req.query.formaPagamento),
+  };
   const [vendas, indicadores] = await Promise.all([
     vendaModel.listar(filtros),
     vendaModel.indicadores(filtros),

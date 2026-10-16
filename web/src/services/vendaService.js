@@ -1,9 +1,10 @@
 import { requisitar } from "./api";
 
-export function consultarVendas({ mes, filialId }) {
+export function consultarVendas({ mes, filialId, formaPagamento }) {
   const consulta = new URLSearchParams({ mes });
 
   if (filialId) consulta.set("filialId", filialId);
+  if (formaPagamento) consulta.set("formaPagamento", formaPagamento);
 
   return requisitar(`/vendas?${consulta.toString()}`);
 }

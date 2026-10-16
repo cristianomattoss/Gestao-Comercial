@@ -48,9 +48,9 @@ try {
 
   for (const v of vendas) {
     await client.query(
-      `INSERT INTO vendas (id, filial_id, produto_id, quantidade, valor_total, mes)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [v.id, v.filialId, v.produtoId, v.quantidade, v.valorTotal, v.mes],
+      `INSERT INTO vendas (id, filial_id, produto_id, quantidade, valor_total, mes, forma_pagamento)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [v.id, v.filialId, v.produtoId, v.quantidade, v.valorTotal, v.mes, v.formaPagamento],
     );
   }
 

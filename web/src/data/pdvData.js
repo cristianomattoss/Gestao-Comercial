@@ -71,6 +71,7 @@ export const vendas = [
     quantidade: 150,
     valorTotal: 1800,
     mes: "2026-07",
+    formaPagamento: "PIX",
   },
   {
     id: 2,
@@ -79,6 +80,7 @@ export const vendas = [
     quantidade: 120,
     valorTotal: 1560,
     mes: "2026-07",
+    formaPagamento: "CREDITO",
   },
   {
     id: 3,
@@ -87,6 +89,7 @@ export const vendas = [
     quantidade: 100,
     valorTotal: 900,
     mes: "2026-07",
+    formaPagamento: "DEBITO",
   },
   {
     id: 4,
@@ -95,6 +98,7 @@ export const vendas = [
     quantidade: 130,
     valorTotal: 1560,
     mes: "2026-07",
+    formaPagamento: "DINHEIRO",
   },
   {
     id: 5,
@@ -103,6 +107,7 @@ export const vendas = [
     quantidade: 110,
     valorTotal: 1430,
     mes: "2026-07",
+    formaPagamento: "PIX",
   },
 
   // AGOSTO
@@ -113,6 +118,7 @@ export const vendas = [
     quantidade: 170,
     valorTotal: 2040,
     mes: "2026-08",
+    formaPagamento: "CREDITO",
   },
   {
     id: 7,
@@ -121,6 +127,7 @@ export const vendas = [
     quantidade: 135,
     valorTotal: 1755,
     mes: "2026-08",
+    formaPagamento: "DEBITO",
   },
   {
     id: 8,
@@ -129,6 +136,7 @@ export const vendas = [
     quantidade: 115,
     valorTotal: 1035,
     mes: "2026-08",
+    formaPagamento: "DINHEIRO",
   },
   {
     id: 9,
@@ -137,6 +145,7 @@ export const vendas = [
     quantidade: 145,
     valorTotal: 1740,
     mes: "2026-08",
+    formaPagamento: "PIX",
   },
   {
     id: 10,
@@ -145,6 +154,7 @@ export const vendas = [
     quantidade: 125,
     valorTotal: 1625,
     mes: "2026-08",
+    formaPagamento: "CREDITO",
   },
 
   // SETEMBRO
@@ -155,6 +165,7 @@ export const vendas = [
     quantidade: 186,
     valorTotal: 2232,
     mes: "2026-09",
+    formaPagamento: "DEBITO",
   },
   {
     id: 12,
@@ -163,6 +174,7 @@ export const vendas = [
     quantidade: 142,
     valorTotal: 1846,
     mes: "2026-09",
+    formaPagamento: "DINHEIRO",
   },
   {
     id: 13,
@@ -171,6 +183,7 @@ export const vendas = [
     quantidade: 128,
     valorTotal: 1152,
     mes: "2026-09",
+    formaPagamento: "PIX",
   },
   {
     id: 14,
@@ -179,6 +192,7 @@ export const vendas = [
     quantidade: 115,
     valorTotal: 575,
     mes: "2026-09",
+    formaPagamento: "CREDITO",
   },
   {
     id: 15,
@@ -187,6 +201,7 @@ export const vendas = [
     quantidade: 98,
     valorTotal: 490,
     mes: "2026-09",
+    formaPagamento: "DEBITO",
   },
   {
     id: 16,
@@ -195,6 +210,7 @@ export const vendas = [
     quantidade: 160,
     valorTotal: 1920,
     mes: "2026-09",
+    formaPagamento: "DINHEIRO",
   },
   {
     id: 17,
@@ -203,6 +219,7 @@ export const vendas = [
     quantidade: 130,
     valorTotal: 1690,
     mes: "2026-09",
+    formaPagamento: "PIX",
   },
 ];
 

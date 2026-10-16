@@ -8,7 +8,7 @@ process.env.DATABASE_URL ??= "postgres://x:x@localhost:5432/x";
 process.env.JWT_SECRET ??= "segredo-de-teste";
 
 const { Estoque } = await import("../src/models/situacaoEstoque.js");
-const { resolverEscopoFilial, lerDadosUsuario } = await import("../src/validacao.js");
+const { resolverEscopoFilial, lerDadosUsuario, lerFormaPagamentoOpcional } = await import("../src/validacao.js");
 const { app } = await import("../src/app.js");
 const { pool } = await import("../src/db.js");
 
@@ -39,6 +39,13 @@ test("escopo: gestor limitado à própria filial, admin livre", () => {
   assert.throws(() => resolverEscopoFilial(gestor, 2), { status: 403 });
   assert.equal(resolverEscopoFilial(admin, undefined), undefined);
   assert.equal(resolverEscopoFilial(admin, 2), 2);
+});
+
+test("UC04: valida o filtro de forma de pagamento", () => {
+  assert.equal(lerFormaPagamentoOpcional(undefined), undefined);
+  assert.equal(lerFormaPagamentoOpcional(""), undefined);
+  assert.equal(lerFormaPagamentoOpcional("PIX"), "PIX");
+  assert.throws(() => lerFormaPagamentoOpcional("BOLETO"), { status: 400 });
 });
 
 let server;

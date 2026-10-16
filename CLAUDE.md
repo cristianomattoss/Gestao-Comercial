@@ -34,14 +34,14 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
 - A API (`api/src`, camadas `routes → controllers → models`) expõe, todos com `Authorization: Bearer <token>`:
   - `POST /auth/login`, `GET /auth/me`
   - `GET /filiais`, `GET /filiais/:id` (gestor só a própria); `POST /filiais`, `PUT /filiais/:id` (ADMIN)
-  - `GET /vendas?mes=AAAA-MM[&filialId]` (lista + indicadores), `/vendas/resumo`, `/vendas/mais-vendidos[&limite]`, `/vendas/por-categoria`
+  - `GET /vendas?mes=AAAA-MM[&filialId][&formaPagamento=DINHEIRO|CREDITO|DEBITO|PIX]` (lista + indicadores), `/vendas/resumo`, `/vendas/mais-vendidos[&limite]`, `/vendas/por-categoria`
   - `GET /vendas/comparativo?mes&filialIds=1,2[&ordenarPor=faturamento|ticketMedio]` e `/vendas/participacao-filiais?mes` (ADMIN)
   - `GET /estoque[?filialId&categoriaId&situacao=NORMAL|ATENCAO|BAIXO|SEM_ESTOQUE]` (itens com State, resumo e alertas)
   - `GET /categorias`, `GET /produtos[?categoriaId]`
   - `GET/POST /usuarios`, `PATCH /usuarios/:id {ativo}` (ADMIN; e-mail único, gestor exige filialId, não inativa a si mesmo). Login de usuário inativo retorna 403
   - `POST /relatorios` (RelatorioBuilder: tipo, periodoInicio/Fim AAAA-MM, filialId, categoriaId, produtoId → prévia + registro no histórico), `GET /relatorios/recentes`, `GET /relatorios/:id/exportar?formato=PDF|EXCEL|CSV`
 - O escopo do gestor (RN12) é aplicado em `resolverEscopoFilial` (`api/src/validacao.js`) antes das consultas. Testes: `npm test -w api` (não precisam de banco).
-- Ainda não existem: filtro de vendas por forma de pagamento e cadastro da empresa. Migrations: `002` cria `relatorios_historico`, `003` adiciona `usuarios.ativo`. Um token já emitido de usuário inativado vale até expirar (a checagem de `ativo` é no login e em `/auth/me`).
+- Ainda não existe o cadastro da empresa. Migrations: `002` cria `relatorios_historico`, `003` adiciona `usuarios.ativo`, `004` adiciona `vendas.forma_pagamento` (nula para vendas antigas). Um token já emitido de usuário inativado vale até expirar (a checagem de `ativo` é no login e em `/auth/me`).
 - O seed da API importa `web/src/data/pdvData.js`; ao remover os mocks, copiar os dados para o seed.
 - O PDF prevê que as vendas venham de **bases de PDV externas** (um adaptador por filial, somente leitura) e que o banco do sistema guarde só usuários, filiais, parâmetros e histórico de relatórios. Hoje tudo fica no mesmo Postgres. Não implementar a integração PDV sem alinhar com o usuário.
 

@@ -8,8 +8,8 @@ import {
 import { consultarEstoque } from "../services/estoqueService";
 
 // O gestor não envia filial: a API aplica o escopo do perfil (RN12).
-export function carregarVendas({ mes, filialId }) {
-  return consultarVendas({ mes, filialId });
+export function carregarVendas({ mes, filialId, formaPagamento }) {
+  return consultarVendas({ mes, filialId, formaPagamento });
 }
 
 // Dashboard do gestor: a API restringe tudo à filial vinculada (RN12).

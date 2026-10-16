@@ -10,6 +10,21 @@ export function lerMes(valor) {
   return valor;
 }
 
+const FORMAS_PAGAMENTO = ["DINHEIRO", "CREDITO", "DEBITO", "PIX"];
+
+// UC04: filtro opcional por forma de pagamento (ausente = todas).
+export function lerFormaPagamentoOpcional(valor) {
+  if (valor === undefined || valor === "") return undefined;
+
+  if (!FORMAS_PAGAMENTO.includes(valor)) {
+    throw badRequest(
+      `Forma de pagamento inválida. Use ${FORMAS_PAGAMENTO.join(", ")}.`,
+    );
+  }
+
+  return valor;
+}
+
 export function lerId(valor, campo = "id") {
   const numero = Number(valor);
 

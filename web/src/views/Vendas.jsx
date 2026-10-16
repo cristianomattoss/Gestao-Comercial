@@ -8,6 +8,13 @@ import { ESTADOS } from "../models/AppState";
 import Sidebar from "../components/Sidebar";
 import { meses } from "../data/pdvData";
 
+const FORMAS_PAGAMENTO = {
+  DINHEIRO: "Dinheiro",
+  CREDITO: "Cartão de crédito",
+  DEBITO: "Cartão de débito",
+  PIX: "Pix",
+};
+
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 }
@@ -25,6 +32,7 @@ function Vendas({ usuario, onLogout }) {
   );
 
   const [mesSelecionado, setMesSelecionado] = useState("2026-09");
+  const [formaPagamento, setFormaPagamento] = useState("todas");
 
   useEffect(() => {
     if (!ehAdmin) return;
@@ -39,7 +47,11 @@ function Vendas({ usuario, onLogout }) {
     const filialId =
       ehAdmin && filialSelecionada !== "todas" ? filialSelecionada : undefined;
 
-    carregarVendas({ mes: mesSelecionado, filialId })
+    carregarVendas({
+      mes: mesSelecionado,
+      filialId,
+      formaPagamento: formaPagamento !== "todas" ? formaPagamento : undefined,
+    })
       .then((dados) => {
         if (!ativo) return;
 
@@ -54,7 +66,7 @@ function Vendas({ usuario, onLogout }) {
     return () => {
       ativo = false;
     };
-  }, [ehAdmin, filialSelecionada, mesSelecionado]);
+  }, [ehAdmin, filialSelecionada, mesSelecionado, formaPagamento]);
 
   return (
     <main className="dashboard-page">
@@ -118,6 +130,23 @@ function Vendas({ usuario, onLogout }) {
               ))}
             </select>
           </div>
+
+          <div className="filter-group">
+            <label>Forma de pagamento</label>
+
+            <select
+              value={formaPagamento}
+              onChange={(event) => setFormaPagamento(event.target.value)}
+            >
+              <option value="todas">Todas</option>
+
+              {Object.entries(FORMAS_PAGAMENTO).map(([codigo, nome]) => (
+                <option key={codigo} value={codigo}>
+                  {nome}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {erro && <p className="login-error">{erro}</p>}
@@ -163,6 +192,7 @@ function Vendas({ usuario, onLogout }) {
                 <th>Produto</th>
                 <th>Categoria</th>
                 <th>Quantidade</th>
+                <th>Pagamento</th>
                 <th>Valor total</th>
               </tr>
             </thead>
@@ -175,6 +205,8 @@ function Vendas({ usuario, onLogout }) {
                   <td>{venda.categoria}</td>
 
                   <td>{venda.quantidade}</td>
+
+                  <td>{FORMAS_PAGAMENTO[venda.formaPagamento] ?? "—"}</td>
 
                   <td>R$ {formatarMoeda(venda.valorTotal)}</td>
                 </tr>
