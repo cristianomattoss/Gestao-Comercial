@@ -41,7 +41,7 @@ Idioma do domínio e do código: **português** (nomes de funções, variáveis,
   - `GET/POST /usuarios`, `PATCH /usuarios/:id {ativo}` (ADMIN; e-mail único, gestor exige filialId, não inativa a si mesmo). Login de usuário inativo retorna 403
   - `POST /relatorios` (RelatorioBuilder: tipo, periodoInicio/Fim AAAA-MM, filialId, categoriaId, produtoId → prévia + registro no histórico), `GET /relatorios/recentes`, `GET /relatorios/:id/exportar?formato=PDF|EXCEL|CSV`
 - O escopo do gestor (RN12) é aplicado em `resolverEscopoFilial` (`api/src/validacao.js`) antes das consultas. Testes: `npm test -w api` (não precisam de banco).
-- Ainda não existe o cadastro da empresa. Migrations: `002` cria `relatorios_historico`, `003` adiciona `usuarios.ativo`, `004` adiciona `vendas.forma_pagamento` (nula para vendas antigas). Um token já emitido de usuário inativado vale até expirar (a checagem de `ativo` é no login e em `/auth/me`).
+- Ainda não existe o cadastro da empresa. Migrations: `002` cria `relatorios_historico`, `003` adiciona `usuarios.ativo`, `004` adiciona `vendas.forma_pagamento` (nula para vendas antigas). O middleware `autenticar` consulta `usuarios.ativo` a cada requisição, então inativar um usuário invalida o token na hora (401).
 - O seed da API importa `web/src/data/pdvData.js`; ao remover os mocks, copiar os dados para o seed.
 - O PDF prevê que as vendas venham de **bases de PDV externas** (um adaptador por filial, somente leitura) e que o banco do sistema guarde só usuários, filiais, parâmetros e histórico de relatórios. Hoje tudo fica no mesmo Postgres. Não implementar a integração PDV sem alinhar com o usuário.
 

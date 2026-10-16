@@ -63,6 +63,10 @@ after(async () => {
   await pool.end();
 });
 
+// Estes testes não usam banco: a checagem de usuário ativo do middleware é simulada.
+let usuarioAtivo = true;
+pool.query = async () => ({ rows: [{ ativo: usuarioAtivo }] });
+
 const token = (perfil, filialId = null) =>
   jwt.sign({ perfil, filialId }, process.env.JWT_SECRET, { subject: "1" });
 
@@ -72,6 +76,21 @@ const get = (path, t) =>
 test("rotas protegidas exigem token", async () => {
   for (const rota of ["/filiais", "/vendas?mes=2026-09", "/estoque", "/produtos"]) {
     assert.equal((await get(rota)).status, 401, rota);
+  }
+});
+
+test("usuário inativado perde o acesso mesmo com token válido", async () => {
+  const t = token("ADMIN");
+
+  assert.equal((await get("/categorias", t)).status, 200);
+
+  usuarioAtivo = false;
+  try {
+    const resposta = await get("/categorias", t);
+    assert.equal(resposta.status, 401);
+    assert.equal((await get("/usuarios", t)).status, 401);
+  } finally {
+    usuarioAtivo = true;
   }
 });
 
