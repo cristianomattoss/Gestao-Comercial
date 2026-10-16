@@ -3,6 +3,7 @@ import "./Dashboard.css";
 import { useEffect, useState } from "react";
 import { carregarFiliais } from "../controllers/filialController";
 
+import EmpresaConfig from "../components/EmpresaConfig";
 import FiliaisConfig from "../components/FiliaisConfig";
 import UsuariosConfig from "../components/UsuariosConfig";
 import Sidebar from "../components/Sidebar";
@@ -70,6 +71,8 @@ function Configuracoes({
             Usuários
           </button>
         </div>
+
+        {abaAtiva === "empresa" && <EmpresaConfig />}
 
         {abaAtiva === "filiais" && (
           <FiliaisConfig filiais={filiais} setFiliais={setFiliais} />

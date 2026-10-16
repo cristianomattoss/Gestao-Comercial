@@ -8,7 +8,7 @@ process.env.DATABASE_URL ??= "postgres://x:x@localhost:5432/x";
 process.env.JWT_SECRET ??= "segredo-de-teste";
 
 const { Estoque } = await import("../src/models/situacaoEstoque.js");
-const { resolverEscopoFilial, lerDadosUsuario, lerFormaPagamentoOpcional } = await import("../src/validacao.js");
+const { resolverEscopoFilial, lerDadosUsuario, lerFormaPagamentoOpcional, lerDadosEmpresa } = await import("../src/validacao.js");
 const { app } = await import("../src/app.js");
 const { pool } = await import("../src/db.js");
 
@@ -46,6 +46,19 @@ test("UC04: valida o filtro de forma de pagamento", () => {
   assert.equal(lerFormaPagamentoOpcional(""), undefined);
   assert.equal(lerFormaPagamentoOpcional("PIX"), "PIX");
   assert.throws(() => lerFormaPagamentoOpcional("BOLETO"), { status: 400 });
+});
+
+test("RF13: valida os dados da empresa", () => {
+  const base = { razaoSocial: "Empresa Ltda", nomeFantasia: "Empresa", cnpj: "11.222.333/0001-81" };
+
+  assert.equal(lerDadosEmpresa(base).cnpj, "11222333000181");
+  assert.equal(lerDadosEmpresa({ ...base, estado: "rj", email: "A@b.com" }).estado, "RJ");
+  assert.equal(lerDadosEmpresa(base).telefone, null);
+  assert.throws(() => lerDadosEmpresa({ ...base, cnpj: "11.222.333/0001-82" }), { status: 400 });
+  assert.throws(() => lerDadosEmpresa({ ...base, cnpj: "11111111111111" }), { status: 400 });
+  assert.throws(() => lerDadosEmpresa({ ...base, razaoSocial: " " }), { status: 400 });
+  assert.throws(() => lerDadosEmpresa({ ...base, estado: "RJX" }), { status: 400 });
+  assert.throws(() => lerDadosEmpresa({ ...base, email: "ruim" }), { status: 400 });
 });
 
 let server;
@@ -92,6 +105,11 @@ test("usuário inativado perde o acesso mesmo com token válido", async () => {
   } finally {
     usuarioAtivo = true;
   }
+});
+
+test("empresa é restrita ao administrador", async () => {
+  assert.equal((await get("/empresa", token("GESTOR", 1))).status, 403);
+  assert.equal((await get("/empresa")).status, 401);
 });
 
 test("gestor não acessa rotas de administrador", async () => {

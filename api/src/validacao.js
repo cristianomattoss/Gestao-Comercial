@@ -94,3 +94,56 @@ export function lerDadosUsuario(body = {}) {
 
   return { email, senha: body.senha, perfil: body.perfil, filialId: null };
 }
+
+function cnpjValido(cnpj) {
+  if (/^(\d){13}$/.test(cnpj)) return false;
+
+  const digito = (base) => {
+    const pesos = base.length === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const soma = [...base].reduce((total, d, i) => total + Number(d) * pesos[i], 0);
+    const resto = soma % 11;
+
+    return resto < 2 ? 0 : 11 - resto;
+  };
+
+  const d1 = digito(cnpj.slice(0, 12));
+
+  return d1 === Number(cnpj[12]) && digito(cnpj.slice(0, 12) + d1) === Number(cnpj[13]);
+}
+
+function textoOpcional(valor) {
+  return typeof valor === "string" && valor.trim() !== "" ? valor.trim() : null;
+}
+
+// RF13: razão social, nome fantasia e CNPJ (com dígitos verificadores) são obrigatórios.
+export function lerDadosEmpresa(body = {}) {
+  const cnpj = String(body.cnpj ?? "").replace(/\D/g, "");
+
+  if (!cnpjValido(cnpj)) {
+    throw badRequest("Informe um CNPJ válido.");
+  }
+
+  const email = textoOpcional(body.email)?.toLowerCase() ?? null;
+
+  if (email && !EMAIL.test(email)) {
+    throw badRequest("Informe um e-mail válido.");
+  }
+
+  const estado = textoOpcional(body.estado)?.toUpperCase() ?? null;
+
+  if (estado && !/^[A-Z]{2}$/.test(estado)) {
+    throw badRequest("Informe o estado com a sigla de duas letras (UF).");
+  }
+
+  return {
+    razaoSocial: textoObrigatorio(body.razaoSocial, "razão social"),
+    nomeFantasia: textoObrigatorio(body.nomeFantasia, "nome fantasia"),
+    cnpj,
+    inscricaoEstadual: textoOpcional(body.inscricaoEstadual),
+    endereco: textoOpcional(body.endereco),
+    cidade: textoOpcional(body.cidade),
+    estado,
+    telefone: textoOpcional(body.telefone),
+    email,
+  };
+}

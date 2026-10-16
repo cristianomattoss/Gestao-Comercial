@@ -9,6 +9,7 @@ import estoqueRoutes from "./routes/estoque.js";
 import catalogoRoutes from "./routes/catalogo.js";
 import relatoriosRoutes from "./routes/relatorios.js";
 import usuariosRoutes from "./routes/usuarios.js";
+import empresaRoutes from "./routes/empresa.js";
 
 export const app = express();
 
@@ -24,6 +25,7 @@ app.use("/vendas", vendasRoutes);
 app.use("/estoque", estoqueRoutes);
 app.use("/relatorios", relatoriosRoutes);
 app.use("/usuarios", usuariosRoutes);
+app.use("/empresa", empresaRoutes);
 app.use("/", catalogoRoutes);
 
 app.use((req, res) => res.status(404).json({ erro: "Rota não encontrada." }));
